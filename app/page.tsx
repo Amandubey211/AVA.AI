@@ -1,6 +1,6 @@
 // app/page.tsx
 
-import AvatarGrid from "../public/images/AvatarGrid";
+import AvatarGrid from "./components/AvatarGrid";
 import FeaturedCarousel from "./components/FeaturedCarousel";
 import Hero from "./components/Hero";
 import { avatars } from "./lib/avatars";

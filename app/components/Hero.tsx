@@ -103,7 +103,7 @@ function HeroScene() {
       <group ref={textGroupRef} position={[0, 3, -8]}>
         <Text
           font="/fonts/Anton-Regular.ttf"
-          fontSize={2}
+          fontSize={3}
           textAlign="center"
           color="white"
           anchorX="center"

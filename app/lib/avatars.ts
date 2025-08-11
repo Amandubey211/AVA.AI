@@ -51,7 +51,7 @@ export const avatars: AvatarConfig[] = [
     character: "Mia",
     modelUrl: "/models/banker-lisa.glb",
     imageUrl: "/images/david.png", // Replace with Mia's image
-    bgImageUrl: "/images/bg-office.jpg",
+    bgImageUrl: "/images/bg-office.png",
     tags: ["CAREER", "COMMUNICATION"],
     shortDescription: "Practice difficult work conversations with me.",
     longDescription: "...",
@@ -71,7 +71,7 @@ export const avatars: AvatarConfig[] = [
     character: "Isobel",
     modelUrl: "/models/banker-lisa.glb",
     imageUrl: "/images/Isobel.png", // Replace with Isobel's image
-    bgImageUrl: "/images/bg-study.jpg",
+    bgImageUrl: "/images/bg-office.png",
     tags: ["HOMEWORK HELP", "VOICE CHANGE", "SUPPORT"],
     shortDescription: "Stuck on a problem? I can help you think it through.",
     longDescription: "",

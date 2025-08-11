@@ -1,17 +1,14 @@
-// store/chatStore.ts
 import { create } from "zustand";
-import { avatars, AvatarConfig } from "../lib/avatars";
 
-interface ChatState {
-  currentAvatar: AvatarConfig;
-  setCurrentAvatar: (avatar: AvatarConfig) => void;
-  // ... we will add more state later
+interface AvatarAnimationState {
+  isSpeaking: boolean;
+  setSpeaking: (isSpeaking: boolean) => void;
 }
 
-export const useChatStore = create<ChatState>((set) => ({
-  // Set the first avatar as the default
-  currentAvatar: avatars[0],
-
-  // Action to update the avatar
-  setCurrentAvatar: (avatar) => set({ currentAvatar: avatar }),
+export const useAvatarStore = create<AvatarAnimationState>((set) => ({
+  isSpeaking: false,
+  setSpeaking: (isSpeaking) => set({ isSpeaking }),
 }));
+
+// Optional: Add selector hooks for better performance
+export const useIsSpeaking = () => useAvatarStore((state) => state.isSpeaking);

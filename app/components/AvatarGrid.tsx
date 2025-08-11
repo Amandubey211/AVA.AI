@@ -2,8 +2,8 @@
 "use client"; // This is the crucial directive
 
 import { motion } from "framer-motion";
-import AvatarCard from "../../app/components/AvatarCard";
-import { AvatarConfig } from "../../app/lib/avatars";
+import AvatarCard from "./AvatarCard";
+import { AvatarConfig } from "../lib/avatars";
 
 // Define the shape of the props this component expects
 interface AvatarGridProps {
