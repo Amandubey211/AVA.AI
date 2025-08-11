@@ -4,7 +4,7 @@ import LenisProvider from "./components/LenisProvider";
 import Navbar from "./components/Navbar";
 import "./globals.css";
 import type { Metadata } from "next";
-
+import { Analytics } from "@vercel/analytics/next";
 export const metadata: Metadata = {
   title: "AI Avatar Platform",
   description: "Interactive AI Avatars powered by Next.js and Three.js",
@@ -25,6 +25,7 @@ export default function RootLayout({
           <main>{children}</main>
           <Footer />
         </LenisProvider>
+        <Analytics />
       </body>
     </html>
   );
