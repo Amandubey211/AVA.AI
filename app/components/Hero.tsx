@@ -1,8 +1,6 @@
-// components/Hero.tsx
 "use client";
-import React, { Suspense } from "react";
 import { JSX } from "react/jsx-runtime";
-
+import React, { Suspense, useRef, useContext, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import {
   useGLTF,
@@ -15,9 +13,11 @@ import {
 } from "@react-three/drei";
 import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import { motion } from "framer-motion";
-import { KernelSize } from "postprocessing"; // --- OPTIMIZATION: For tuning Bloom
+import { KernelSize } from "postprocessing";
+import { MathUtils, Group } from "three";
+import { LenisContext } from "../context/LenisContext";
 
-// Reusable Model Component
+// Reusable Model Component (No changes)
 function Model({
   url,
   ...props
@@ -26,15 +26,36 @@ function Model({
   return <primitive object={scene} {...props} />;
 }
 
-// The Main 3D Scene (Optimized)
+// The Main 3D Scene (Now with Scroll Animation)
 function HeroScene() {
-  useGLTF.preload("/models/Alexa.glb");
-  useGLTF.preload("/models/banker-lisa.glb");
-  useGLTF.preload("/models/historian-david.glb");
+  const modelsGroupRef = useRef<Group>(null!);
+  const textGroupRef = useRef<Group>(null!);
+
+  const lenis = useContext(LenisContext); // Get the lenis instance from context
+
+  useEffect(() => {
+    if (!lenis) return;
+
+    // Define the animation function to run on scroll
+    function onScroll({ progress }: { progress: number }) {
+      if (modelsGroupRef.current && textGroupRef.current) {
+        // Use lerp for smooth interpolation based on scroll progress (0 to 1)
+        modelsGroupRef.current.position.y = MathUtils.lerp(0, 1.5, progress);
+        textGroupRef.current.position.y = MathUtils.lerp(3, 4, progress);
+      }
+    }
+
+    // Subscribe to the 'scroll' event
+    lenis.on("scroll", onScroll);
+
+    // Unsubscribe on component cleanup to prevent memory leaks
+    return () => {
+      lenis.off("scroll", onScroll);
+    };
+  }, [lenis]); // Re-run effect if lenis instance changes
 
   return (
     <>
-      {/* Lighting Rig is generally okay, no major changes needed */}
       <Environment preset="night" />
       <ambientLight intensity={0.2} />
       <spotLight
@@ -46,29 +67,28 @@ function HeroScene() {
       />
       <directionalLight position={[0, 10, 0]} intensity={0.3} color="white" />
 
-      {/* RE-COMPOSED SCENE */}
-      <group position={[0, 0, 0]}>
+      {/* 3D MODELS: Now wrapped in a ref'd group for animation */}
+      <group ref={modelsGroupRef} position={[0, 0, 0]}>
         <Float speed={0.5} rotationIntensity={0.1} floatIntensity={0.2}>
           <Model
             url="/models/banker-lisa.glb"
             position={[0, -2.4, 0]}
             rotation={[0, -0.2, 0]}
-            scale={2.7}
+            scale={3}
           />
           <Model
             url="/models/Alexa.glb"
             position={[-2.2, -2.4, 0.5]}
             rotation={[0, 0.4, 0]}
-            scale={2.7}
+            scale={3}
           />
           <Model
-            url="/models/historian-david.glb"
+            url="/models/FashionDesigner-Lisa.glb"
             position={[2.2, -2.4, 0.5]}
             rotation={[0, -0.4, 0]}
-            scale={2.7}
+            scale={3}
           />
         </Float>
-
         <ContactShadows
           position={[0, -2.45, 0]}
           opacity={0.7}
@@ -79,7 +99,8 @@ function HeroScene() {
         />
       </group>
 
-      <group position={[0, 3, -8]}>
+      {/* 3D TEXT: Also in a ref'd group */}
+      <group ref={textGroupRef} position={[0, 3, -8]}>
         <Text
           font="/fonts/Anton-Regular.ttf"
           fontSize={2}
@@ -92,7 +113,6 @@ function HeroScene() {
         </Text>
       </group>
 
-      {/* HTML UI */}
       <Html fullscreen>
         <div className="flex flex-col items-center justify-end h-full pb-20 pointer-events-none">
           <motion.div
@@ -119,7 +139,6 @@ function HeroScene() {
         </div>
       </Html>
 
-      {/* POST-PROCESSING */}
       <EffectComposer>
         <Bloom
           kernelSize={KernelSize.SMALL}
@@ -134,7 +153,7 @@ function HeroScene() {
   );
 }
 
-// The Exported Hero Component
+// The Exported Hero Component (No changes needed here)
 export default function Hero() {
   return (
     <section className="relative w-full h-screen bg-black">

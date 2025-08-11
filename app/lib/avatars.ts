@@ -1,61 +1,86 @@
 // lib/avatars.ts
+
+// Define the theme properties for each card
+export interface CardTheme {
+  textColor?: string; // e.g., '#FFFFFF'
+  themeColor?: string; // e.g., '#8A2BE2' for buttons/accents
+  fontFamily?: string; // e.g., "'Roboto', sans-serif"
+}
+
 export interface AvatarConfig {
   id: string;
-  name: string; // The "Practice speaking English" part
-  character: string; // The "Alex" in "with Alex"
+  name: string;
+  character: string;
   modelUrl: string;
-  imageUrl: string; // High-quality image of the character
-  bgImageUrl?: string; // Optional background for featured cards
+  imageUrl: string;
+  bgImageUrl?: string;
   tags: string[];
   shortDescription: string;
   longDescription: string;
   systemPrompt: string;
-  featured: boolean; // Is it in the top carousel?
-  action: 'Talk' | 'Subscribe'; // To control the button text
+  featured: boolean;
+  action: "Talk" | "Subscribe";
+  theme?: CardTheme; // Add the optional theme object
 }
 
 export const avatars: AvatarConfig[] = [
   {
-    id: 'alex-english-tutor',
-    name: 'Practice speaking English',
-    character: 'Alex',
-    modelUrl: '/models/Alexa.glb', // Replace with Alex's model
-    imageUrl: '/images/Alexa.png', // Transparent character image
-    bgImageUrl: '/images/bg-library.png', // Background for the featured card
-    tags: ['LANGUAGE', 'CONVERSATION', 'PRACTICE'],
-    shortDescription: "I can help you practice all kinds of English-speaking scenarios.",
-    longDescription: "Need help navigating a delicate conversation or practice asking for a promotion? Let's role-play.",
-    systemPrompt: `You are Alex, an expert English tutor...`,
+    id: "alex-english-tutor",
+    name: "Practice speaking English",
+    character: "Alex",
+    modelUrl: "/models/Alexa.glb",
+    imageUrl: "/images/Alexa.png",
+    bgImageUrl: "/images/bg-library.png",
+    tags: ["LANGUAGE", "CONVERSATION", "PRACTICE"],
+    shortDescription:
+      "I can help you practice all kinds of English-speaking scenarios.",
+    longDescription: "...",
+    systemPrompt: `...`,
     featured: true,
-    action: 'Talk',
+    action: "Talk",
+    theme: {
+      // Dynamic theme for Alex
+      textColor: "#FFFFFF",
+      themeColor: "#4A90E2", // A calming blue
+      fontFamily: "'Inter', sans-serif",
+    },
   },
   {
-    id: 'mia-work-conversations',
-    name: 'Master work conversations',
-    character: 'Mia',
-    modelUrl: '/models/banker-lisa.glb', // Replace with Mia's model
-   imageUrl: '/images/david.png', // Transparent character image
-    bgImageUrl: '/images/bg-library.png', // Background for the featured card
-    tags: ['CAREER', 'COMMUNICATION'],
+    id: "mia-work-conversations",
+    name: "Master work conversations",
+    character: "Mia",
+    modelUrl: "/models/banker-lisa.glb",
+    imageUrl: "/images/david.png", // Replace with Mia's image
+    bgImageUrl: "/images/bg-office.jpg",
+    tags: ["CAREER", "COMMUNICATION"],
     shortDescription: "Practice difficult work conversations with me.",
-    longDescription: "From asking for a raise to giving feedback, we can practice any professional scenario you need to master.",
-    systemPrompt: `You are Mia, a career coach specializing in work communication...`,
+    longDescription: "...",
+    systemPrompt: `...`,
     featured: true,
-    action: 'Talk',
+    action: "Talk",
+    theme: {
+      // Dynamic theme for Mia
+      textColor: "#F5F5F5",
+      themeColor: "#50E3C2", // A professional teal
+      fontFamily: "'Montserrat', sans-serif",
+    },
   },
   {
-    id: 'isobel-study-help',
-    name: 'Get study & homework help',
-    character: 'Isobel',
-    modelUrl: '/models/banker-lisa.glb', // Replace
-    imageUrl: '/images/david.png', // Transparent character image
-    bgImageUrl: '/images/bg-library.png', // Background for the featured card
-    tags: ['HOMEWORK HELP', 'VOICE CHANGE', 'SUPPORT'],
-    shortDescription: 'Stuck on a problem? I can help you think it through.',
-    longDescription: '',
-    systemPrompt: `You are Isobel, a friendly and patient study buddy...`,
+    id: "isobel-study-help",
+    name: "Get study & homework help",
+    character: "Isobel",
+    modelUrl: "/models/banker-lisa.glb",
+    imageUrl: "/images/Isobel.png", // Replace with Isobel's image
+    bgImageUrl: "/images/bg-study.jpg",
+    tags: ["HOMEWORK HELP", "VOICE CHANGE", "SUPPORT"],
+    shortDescription: "Stuck on a problem? I can help you think it through.",
+    longDescription: "",
+    systemPrompt: `...`,
     featured: false,
-    action: 'Subscribe',
+    action: "Subscribe",
+    theme: {
+      // Subscribe button will be green by default, but text can change
+      textColor: "#00c951",
+    },
   },
-  // Add more avatars, making some featured: false
 ];

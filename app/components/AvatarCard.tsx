@@ -1,71 +1,67 @@
-// components/AvatarCard.tsx
 "use client";
+
+import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Info, Mic } from "lucide-react";
+import { Mic } from "lucide-react";
 import { AvatarConfig } from "../lib/avatars";
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   show: { opacity: 1, y: 0, transition: { type: "spring" } },
-} as const; // <-- THE FIX IS HERE: This `as const` assertion solves the type issue.
+} as const;
 
-export default function AvatarCard({ avatar }: { avatar: AvatarConfig }) {
-  const buttonClass =
-    avatar.action === "Talk"
-      ? "bg-gray-700 hover:bg-gray-600"
-      : "bg-green-500 text-black hover:bg-green-400";
-
+const AvatarCard = React.memo(function AvatarCard({
+  avatar,
+}: {
+  avatar: AvatarConfig;
+}) {
   return (
     <motion.div variants={itemVariants}>
       <Link href={`/chat/${avatar.id}`}>
-        <div className="bg-gray-800 rounded-3xl h-[450px] flex flex-col group cursor-pointer overflow-hidden p-1">
-          {/* Main Image Background */}
-          <div
-            className="relative w-full h-full rounded-2xl overflow-hidden flex flex-col justify-end p-6"
-            style={{
-              backgroundImage: `url(${avatar.imageUrl})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center 70%",
-            }}
-          >
-            {/* Gradient for text readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+        <div
+          className="relative bg-gray-900 rounded-3xl overflow-hidden h-[350px] flex flex-col justify-between p-6 cursor-pointer"
+          style={{
+            backgroundImage: `url(${avatar.imageUrl})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        >
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
 
-            {/* Content at bottom */}
-            <div className="relative z-10 transition-all transform group-hover:-translate-y-2">
-              <h3 className="text-2xl font-bold">{avatar.name}</h3>
-              <p className="text-gray-300">with {avatar.character}</p>
-              <div className="flex gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                {avatar.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-2 py-1 bg-black/50 text-xs rounded-full"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
+          {/* Content */}
+          <div className="relative z-10">
+            <h3 className="text-3xl font-bold text-white">{avatar.name}</h3>
+            <p className="text-gray-300 mt-1">with {avatar.character}</p>
+            <div className="flex flex-wrap gap-2 mt-4">
+              {avatar.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="px-3 py-1 bg-black/50 text-xs rounded-full text-white"
+                >
+                  {tag}
+                </span>
+              ))}
             </div>
+          </div>
 
-            {/* Buttons appear on hover */}
-            <div className="absolute bottom-6 right-6 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <button
-                className="p-3 rounded-full bg-black/50 backdrop-blur-sm"
-                title="Info"
-              >
-                <Info size={16} />
-              </button>
-              <button
-                className={`px-5 py-3 rounded-full font-semibold flex items-center gap-2 ${buttonClass}`}
-              >
-                <Mic size={16} />
-                {avatar.action}
-              </button>
-            </div>
+          {/* Buttons */}
+          <div className="relative z-10 flex items-center gap-3 mt-6">
+            <button
+              title="mic"
+              className="p-4 rounded-full bg-black flex items-center justify-center shadow-md hover:scale-105 transition"
+            >
+              <Mic size={18} color="white" />
+            </button>
+            <button className="px-6 py-3 rounded-full font-semibold text-white bg-black  hover:bg-white cursor-pointer hover:text-black transition">
+              Talk
+            </button>
           </div>
         </div>
       </Link>
     </motion.div>
   );
-}
+});
+
+export default AvatarCard;

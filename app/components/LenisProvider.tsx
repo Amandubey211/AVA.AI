@@ -1,11 +1,15 @@
 // components/LenisProvider.tsx
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-// Correct import based on your specified package
-import Lenis from 'lenis'; 
+import { useEffect, useRef } from "react";
+import Lenis from "lenis";
+import { LenisContext } from "../context/LenisContext";
 
-export default function LenisProvider({ children }: { children: React.ReactNode }) {
+export default function LenisProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const lenisRef = useRef<Lenis | null>(null);
 
   useEffect(() => {
@@ -13,7 +17,7 @@ export default function LenisProvider({ children }: { children: React.ReactNode 
     if (!lenisRef.current) {
       lenisRef.current = new Lenis();
     }
-    
+
     const lenis = lenisRef.current;
 
     function raf(time: number) {
@@ -23,13 +27,20 @@ export default function LenisProvider({ children }: { children: React.ReactNode 
 
     const rafId = requestAnimationFrame(raf);
 
-    // Clean up the effect
     return () => {
       cancelAnimationFrame(rafId);
-      // You can add a destroy method if the specific version has it,
-      // but stopping the animation frame is the main task.
+      // On cleanup, properly destroy the instance if the method exists
+      if (lenisRef.current) {
+        lenisRef.current.destroy();
+        lenisRef.current = null;
+      }
     };
   }, []);
 
-  return <>{children}</>;
+  return (
+    // Provide the lenis instance to all child components
+    <LenisContext.Provider value={lenisRef.current}>
+      {children}
+    </LenisContext.Provider>
+  );
 }
