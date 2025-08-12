@@ -63,7 +63,7 @@ export const avatars: AvatarConfig[] = [
     featured: true,
     action: "Talk",
     theme: {
-      textColor: "#F5F5F5",
+      textColor: "#50E3C2",
       themeColor: "#50E3C2",
       fontFamily: "'Montserrat', sans-serif",
     },
@@ -73,8 +73,9 @@ export const avatars: AvatarConfig[] = [
     name: "Achieve Your Fitness Goals",
     character: "Atlas",
     modelUrl: "/models/atlas.glb", // Replace
-    imageUrl: "/images/atlas.png", // Replace
-    bgImageUrl: "/images/bg-gym.jpg", // Replace
+    // imageUrl: "/images/atlas.png", // Replace
+    imageUrl: "/images/david.png", // Replace
+    bgImageUrl: "/images/bg/bg-gym.png", // Replace
     tags: ["FITNESS", "WORKOUTS", "NUTRITION"],
     shortDescription:
       "Your personal AI trainer for workout plans and motivation.",
@@ -100,8 +101,9 @@ export const avatars: AvatarConfig[] = [
     name: "Find Your Calm",
     character: "Luna",
     modelUrl: "/models/luna.glb", // Replace
-    imageUrl: "/images/luna.png", // Replace
-    bgImageUrl: "/images/bg-calm.jpg", // Replace
+    // imageUrl: "/images/luna.png", // Replace
+    imageUrl: "/images/david.png", // Replace
+    bgImageUrl: "/images/bg/bg-dream.png", // Replace
     tags: ["WELLNESS", "MEDITATION", "STRESS RELIEF"],
     shortDescription: "A guide for mindfulness and guided meditation sessions.",
     longDescription:
@@ -125,8 +127,9 @@ export const avatars: AvatarConfig[] = [
     name: "Solve Coding Problems",
     character: "Kai",
     modelUrl: "/models/kai.glb", // Replace
-    imageUrl: "/images/kai.png", // Replace
-    bgImageUrl: "/images/bg-code.jpg", // Replace
+    // imageUrl: "/images/kai.png", // Replace
+    imageUrl: "/images/david.png", // Replace
+    bgImageUrl: "/images/bg/bg-code.png", // Replace
     tags: ["TECH", "CODE", "DEBUGGING"],
     shortDescription: "Your AI pair programmer for debugging and learning.",
     longDescription:
@@ -156,7 +159,7 @@ export const avatars: AvatarConfig[] = [
     character: "Isobel",
     modelUrl: "/models/banker-lisa.glb", // Replace
     imageUrl: "/images/Isobel.png",
-    bgImageUrl: "/images/bg-study.jpg", // Replace
+    bgImageUrl: "/images/Isobel.png", // Replace
     tags: ["HOMEWORK HELP", "CRITICAL THINKING", "SUPPORT"],
     shortDescription: "Stuck on a problem? I can help you think it through.",
     longDescription:
@@ -172,7 +175,7 @@ export const avatars: AvatarConfig[] = [
     character: "Vesper",
     modelUrl: "/models/vesper.glb", // Replace
     imageUrl: "/images/vesper.png", // Replace
-    bgImageUrl: "/images/bg-travel.jpg", // Replace
+    bgImageUrl: "/images/bg/bg-travel.png", // Replace
     tags: ["TRAVEL", "PLANNING", "ITINERARY"],
     shortDescription: "Your AI travel agent for itineraries and local tips.",
     longDescription:
@@ -192,7 +195,7 @@ export const avatars: AvatarConfig[] = [
     character: "Remy",
     modelUrl: "/models/remy.glb", // Replace
     imageUrl: "/images/remy.png", // Replace
-    bgImageUrl: "/images/bg-kitchen.jpg", // Replace
+    bgImageUrl: "/images/bg/bg-kitchen.png", // Replace
     tags: ["COOKING", "RECIPES", "FOODIE"],
     shortDescription: "Discover recipes and master new cooking techniques.",
     longDescription:
@@ -211,7 +214,7 @@ export const avatars: AvatarConfig[] = [
     character: "Elara",
     modelUrl: "/models/elara.glb", // Replace
     imageUrl: "/images/elara.png", // Replace
-    bgImageUrl: "/images/bg-writing.jpg", // Replace
+    bgImageUrl: "/images/bg/bg-writing.png", // Replace
     tags: ["CREATIVE", "WRITING", "STORYTELLING"],
     shortDescription: "Your creative partner for brainstorming stories.",
     longDescription:
@@ -230,7 +233,7 @@ export const avatars: AvatarConfig[] = [
     character: "Julian",
     modelUrl: "/models/julian.glb", // Replace
     imageUrl: "/images/julian.png", // Replace
-    bgImageUrl: "/images/bg-finance.jpg", // Replace
+    bgImageUrl: "/images/bg/bg-finance.png", // Replace
     tags: ["FINANCE", "INVESTING", "STOCKS"],
     shortDescription: "Explains complex investment concepts in simple terms.",
     longDescription:
@@ -250,7 +253,7 @@ export const avatars: AvatarConfig[] = [
     character: "Cleo",
     modelUrl: "/models/cleo.glb", // Replace
     imageUrl: "/images/cleo.png", // Replace
-    bgImageUrl: "/images/bg-ancient.jpg", // Replace
+    bgImageUrl: "/images/bg/bg-ancient.png", // Replace
     tags: ["HISTORY", "ANCIENT", "ARCHAEOLOGY"],
     shortDescription:
       "Your personal guide to the wonders of the ancient world.",
@@ -271,7 +274,7 @@ export const avatars: AvatarConfig[] = [
     character: "Hugh",
     modelUrl: "/models/hugh.glb", // Replace
     imageUrl: "/images/hugh.png", // Replace
-    bgImageUrl: "/images/bg-london.jpg", // Replace
+    bgImageUrl: "/images/bg/bg-london.png", // Replace
     tags: ["LANGUAGE", "BRITISH", "DIALECT"],
     shortDescription: "Learn British slang and practice a perfect accent.",
     longDescription:
@@ -291,7 +294,7 @@ export const avatars: AvatarConfig[] = [
     character: "Willow",
     modelUrl: "/models/willow.glb", // Replace
     imageUrl: "/images/willow.png", // Replace
-    bgImageUrl: "/images/bg-garden.jpg", // Replace
+    bgImageUrl: "/images/bg/bg-garden.png", // Replace
     tags: ["GARDENING", "PLANTS", "DIY"],
     shortDescription: "Your guide to gardening and plant care.",
     longDescription:
@@ -310,7 +313,7 @@ export const avatars: AvatarConfig[] = [
     character: "Portia",
     modelUrl: "/models/portia.glb", // Replace
     imageUrl: "/images/portia.png", // Replace
-    bgImageUrl: "/images/bg-law.jpg", // Replace
+    bgImageUrl: "/images/bg/bg-law.png", // Replace
     tags: ["LAW", "CONCEPTS", "EDUCATION"],
     shortDescription: "Breaks down complex legal terms and ideas.",
     longDescription:

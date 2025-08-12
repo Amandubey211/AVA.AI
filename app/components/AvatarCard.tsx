@@ -22,7 +22,7 @@ const AvatarCard = React.memo(function AvatarCard({
         <div
           className="relative bg-gray-900 rounded-3xl overflow-hidden h-[350px] flex flex-col justify-between p-6 cursor-pointer"
           style={{
-            backgroundImage: `url(${avatar.imageUrl})`,
+            backgroundImage: `url(${avatar.bgImageUrl})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
