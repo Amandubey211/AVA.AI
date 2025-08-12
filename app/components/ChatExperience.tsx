@@ -13,7 +13,6 @@ import { useAvatarChat } from "../hooks/useAvatarChat";
 
 export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
   const router = useRouter();
-  // We only need these state values now, the hook handles the rest.
   const { isRecording, setIsRecording } = useAvatarStore();
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(
     null
@@ -21,15 +20,17 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  // The custom hook now handles all complex logic, including TTS.
   const { messages, status, error, stop, sendMessage } = useAvatarChat({
     systemPrompt: avatar.systemPrompt,
   });
 
   // Initialize Speech Recognition
   useEffect(() => {
+    // The types for window.SpeechRecognition are now available globally
+    // thanks to the @types/dom-speech-recognition package.
     const SpeechRecognitionAPI =
-      window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
     if (!SpeechRecognitionAPI) {
       console.warn("SpeechRecognition API not supported.");
       return;
@@ -38,13 +39,13 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
     recog.continuous = true;
     recog.interimResults = true;
     recog.lang = "en-US";
-    recog.onresult = (event) => {
+    recog.onresult = (event: SpeechRecognitionEvent) => {
       const transcript = Array.from(event.results)
         .map((result) => result[0].transcript)
         .join("");
       setInput(transcript);
     };
-    recog.onerror = (event: any) => {
+    recog.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error("Speech recognition error:", event.error);
       setIsRecording(false);
     };
@@ -57,20 +58,16 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // --- THE CORRECTED `handleSend` FUNCTION ---
   const handleSend = (messageText: string) => {
     if (!messageText.trim() || !avatar) return;
 
-    // The `sendMessage` function from our hook expects a UIMessage object.
-    // We no longer need the createUserMessage helper.
-    const createUserMessage = (text: string) => ({
+    sendMessage({
       id: `user-msg-${Date.now()}`,
       role: "user",
-      parts: [{ type: "text", text }],
+      parts: [{ type: "text", text: messageText }],
     });
-    sendMessage(createUserMessage(messageText));
 
-    setInput(""); // Clear the input after sending
+    setInput("");
   };
 
   const toggleRecording = () => {

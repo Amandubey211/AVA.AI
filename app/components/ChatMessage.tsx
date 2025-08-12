@@ -1,5 +1,7 @@
 "use client";
-import { motion } from "framer-motion";
+
+// 1. Import the 'Variants' type from framer-motion
+import { motion, Variants } from "framer-motion";
 import type { UIMessage } from "@ai-sdk/react";
 import { Bot, User } from "lucide-react";
 
@@ -15,12 +17,18 @@ export default function ChatMessage({ message }: ChatMessageProps) {
     ? message.parts.find((part) => part.type === "text")?.text || ""
     : "";
 
-  const itemVariants = {
+  // 2. Apply the 'Variants' type to your variants object
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     show: {
       opacity: 1,
       y: 0,
-      transition: { type: "spring", stiffness: 100, damping: 15 },
+      transition: {
+        // Now TypeScript knows that 'type' must be "spring", "tween", etc.
+        type: "spring",
+        stiffness: 100,
+        damping: 15,
+      },
     },
   };
 
