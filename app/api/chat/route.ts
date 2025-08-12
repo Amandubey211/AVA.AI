@@ -1,33 +1,50 @@
 // app/api/chat/route.ts
-import { generateText } from "ai";
+import { streamText, UIMessage, convertToModelMessages } from "ai";
 import { google } from "@ai-sdk/google";
-import { NextResponse } from "next/server";
 
-// We can remove the edge runtime for this non-streaming approach
-// export const runtime = 'edge';
+export const runtime = "edge";
 
 export async function POST(req: Request) {
   try {
-    const { messages, systemPrompt } = await req.json();
+    const body = await req.json();
+
+    console.log("Full request body received:", JSON.stringify(body, null, 2));
+
+    const {
+      messages,
+      systemPrompt,
+    }: { messages: UIMessage[]; systemPrompt: string } = body;
+
+    console.log("Extracted systemPrompt:", systemPrompt);
+    console.log("Extracted messages:", messages);
 
     if (!messages || !systemPrompt) {
-      return new NextResponse("Missing messages or systemPrompt", {
+      return new Response("Missing messages or systemPrompt in request body", {
         status: 400,
       });
     }
 
-    // --- Use generateText to get the full response at once ---
-    const { text } = await generateText({
+    const modelMessages = convertToModelMessages(messages ?? []);
+
+    const result = await streamText({
       model: google("gemini-1.5-flash"),
       system: systemPrompt,
-      messages,
+      messages: modelMessages,
     });
 
-    // --- Return the response as a simple JSON object ---
-    // The AI SDK `Message` format expects a role and content
-    return NextResponse.json({ role: "assistant", content: text });
+    result.usage.then((usage) => {
+      console.log("Usage:", {
+        totalTokens: usage.totalTokens,
+      });
+    });
+
+    return result.toUIMessageStreamResponse();
   } catch (error) {
     console.error("[CHAT_API_ERROR]", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    return new Response(`Internal Server Error: ${errorMessage}`, {
+      status: 500,
+    });
   }
 }

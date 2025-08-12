@@ -1,38 +1,55 @@
-// components/ChatMessage.tsx
 "use client";
 import { motion } from "framer-motion";
 import type { UIMessage } from "@ai-sdk/react";
+import { Bot, User } from "lucide-react";
 
 interface ChatMessageProps {
   message: UIMessage;
 }
 
 export default function ChatMessage({ message }: ChatMessageProps) {
-  const isUser = message.role === "user";
+  if (!message) return null;
 
-  // --- FIX: Find the first text part in the `parts` array ---
-  // This makes the component robust for the future.
-  const textContent =
-    message.parts.find((part) => part.type === "text")?.text || "";
+  const isUser = message.role === "user";
+  const textContent = Array.isArray(message.parts)
+    ? message.parts.find((part) => part.type === "text")?.text || ""
+    : "";
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: "spring", stiffness: 100, damping: 15 },
+    },
+  };
 
   return (
     <motion.div
-      className={`flex items-start gap-3 my-4 ${isUser ? "justify-end" : ""}`}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
+      variants={itemVariants}
+      className={`flex items-start gap-4 my-5 ${
+        isUser ? "justify-end" : "justify-start"
+      }`}
     >
       {!isUser && (
-        <div className="w-8 h-8 rounded-full bg-purple-500 flex-shrink-0"></div>
+        <div className="w-10 h-10 rounded-full bg-purple-500 flex-shrink-0 flex items-center justify-center shadow-lg">
+          <Bot size={24} />
+        </div>
       )}
       <div
-        className={`p-3 rounded-xl max-w-lg ${
-          isUser ? "bg-blue-600" : "bg-gray-700"
+        className={`p-4 rounded-2xl max-w-md shadow-md ${
+          isUser ? "bg-blue-600 rounded-br-none" : "bg-gray-700 rounded-bl-none"
         }`}
       >
-        {/* --- FIX: Render the extracted text content --- */}
-        <p className="text-white whitespace-pre-wrap">{textContent}</p>
+        <p className="text-white whitespace-pre-wrap leading-relaxed">
+          {textContent}
+        </p>
       </div>
+      {isUser && (
+        <div className="w-10 h-10 rounded-full bg-blue-600 flex-shrink-0 flex items-center justify-center shadow-lg">
+          <User size={24} />
+        </div>
+      )}
     </motion.div>
   );
 }
