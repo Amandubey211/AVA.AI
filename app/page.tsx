@@ -2,7 +2,7 @@
 
 import AvatarGrid from "./components/AvatarGrid";
 import FeaturedCarousel from "./components/FeaturedCarousel";
-// import Hero from "./components/Hero";
+import Hero from "./components/Hero";
 import { avatars } from "./lib/avatars";
 import { Metadata } from "next";
 
@@ -66,7 +66,7 @@ export default function LandingPage() {
   return (
     <>
       <main>
-        {/* <Hero /> */}
+        <Hero />
         <FeaturedCarousel avatars={featuredAvatars} />
 
         <section className="py-16 px-8">

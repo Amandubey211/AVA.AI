@@ -1,12 +1,8 @@
-// lib/avatars.ts
-
-// Define the theme properties for each card
 export interface CardTheme {
   textColor?: string; // e.g., '#FFFFFF'
   themeColor?: string; // e.g., '#8A2BE2' for buttons/accents
   fontFamily?: string; // e.g., "'Roboto', sans-serif"
 }
-
 export interface AvatarConfig {
   id: string;
   name: string;
