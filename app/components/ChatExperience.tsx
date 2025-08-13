@@ -31,8 +31,8 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  // --- THE DEFINITIVE FIX: A ref to track the reason for stopping recognition ---
-  // This ref will tell our `onend` handler whether to *truly* stop the session.
+  // --- CONTEXT BUG FIX: Use a ref for the final transcript ---
+  const finalTranscriptRef = useRef("");
   const isMuteAction = useRef(false);
 
   const [isDevelopment, setIsDevelopment] = useState(false);
@@ -44,7 +44,6 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
     systemPrompt: avatar.systemPrompt,
   });
 
-  // Initialize Speech Recognition
   useEffect(() => {
     const SpeechRecognitionAPI =
       (window as IWindow).SpeechRecognition ||
@@ -58,40 +57,51 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
     recog.continuous = true;
     recog.interimResults = true;
     recog.lang = "en-US";
+
     recog.onresult = (event: SpeechRecognitionEvent) => {
       if (useAvatarStore.getState().isMuted) return;
-      const transcript = Array.from(event.results)
-        .map((result) => result[0].transcript)
-        .join("");
-      setInput(transcript);
+      let interimTranscript = "";
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscriptRef.current += event.results[i][0].transcript;
+        } else {
+          interimTranscript += event.results[i][0].transcript;
+        }
+      }
+      setInput(finalTranscriptRef.current + interimTranscript);
     };
+
     recog.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error("Speech recognition error:", event.error);
       setIsRecording(false);
     };
-
-    // --- THE DEFINITIVE FIX: The "smart" onend handler ---
     recog.onend = () => {
-      // This handler now checks our flag.
-      // If the stop was caused by a mute/unmute action, we do nothing.
-      if (isMuteAction.current) {
-        // Reset the flag for the next action.
-        isMuteAction.current = false;
-        return;
+      if (!isMuteAction.current) {
+        setIsRecording(false);
       }
-      // If it was a "natural" stop (e.g., user clicked the main stop button),
-      // then we update the state.
-      setIsRecording(false);
+      isMuteAction.current = false;
     };
     setRecognition(recog);
+
+    return () => {
+      recog.stop();
+    };
   }, [setIsRecording]);
 
   useEffect(() => {
-    initialize();
+    initialize(); // Reset the `hasInitialized` flag on component mount
   }, [initialize]);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // --- CONTEXT BUG FIX: Manually reset the transcript ref when input is cleared by the user ---
+  useEffect(() => {
+    if (input === "") {
+      finalTranscriptRef.current = "";
+    }
+  }, [input]);
 
   const handleSend = (messageText: string) => {
     if (!messageText.trim() || !avatar) return;
@@ -101,15 +111,16 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
       parts: [{ type: "text", text: messageText }],
     });
     setInput("");
+    finalTranscriptRef.current = ""; // Also reset on send
   };
 
-  // --- THE DEFINITIVE, BUG-FREE LOGIC ---
   const toggleRecording = () => {
     if (isRecording) {
-      isMuteAction.current = false; // This is a real stop, not a mute action.
+      isMuteAction.current = false;
       recognition?.stop();
     } else {
       setInput("");
+      finalTranscriptRef.current = ""; // Reset transcript on every new recording session
       setMuted(false);
       recognition?.start();
       setIsRecording(true);
@@ -119,13 +130,10 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
   const handleMuteToggle = () => {
     const nextMutedState = !isMuted;
     setMuted(nextMutedState);
-
     if (isRecording) {
-      isMuteAction.current = true; // Signal to `onend` to ignore this stop.
+      isMuteAction.current = true;
       recognition?.stop();
-
       if (!nextMutedState) {
-        // If unmuting, immediately restart. The `onend` event will be ignored.
         recognition?.start();
       }
     }

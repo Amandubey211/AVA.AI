@@ -25,6 +25,7 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-focus-on": "^3.10.0",
+    "react-hot-toast": "^2.5.2",
     "three": "^0.179.1",
     "zod": "^3.25.76",
     "zustand": "^5.0.7"

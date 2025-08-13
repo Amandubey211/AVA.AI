@@ -25,7 +25,8 @@ export default function ChatInput({
   toggleRecording,
   handleMuteToggle,
 }: ChatInputProps) {
-  const { isRecording, isMuted } = useAvatarStore();
+  // --- Get ALL necessary state from the store, including the `hasInitialized` flag ---
+  const { hasInitialized, initialize, isRecording, isMuted } = useAvatarStore();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -48,6 +49,35 @@ export default function ChatInput({
     }
   }, [input]);
 
+  const handleInitialClick = () => {
+    initialize(); // Set the chat as initialized in the global store
+    toggleRecording(); // Trigger the first recording session
+  };
+
+  // --- UI FIX: This conditional render restores the onboarding UI ---
+  if (!hasInitialized) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-center p-4">
+        <motion.button
+          onClick={handleInitialClick}
+          className="w-24 h-24 bg-purple-600 rounded-full flex items-center justify-center text-white shadow-lg shadow-purple-600/50"
+          aria-label="Start Listening"
+          whileHover={{ scale: 1.1 }}
+          animate={{
+            scale: [1, 1.05, 1],
+            transition: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
+          }}
+        >
+          <Mic size={48} />
+        </motion.button>
+        <p className="mt-4 text-gray-400">
+          Click the mic to start the conversation
+        </p>
+      </div>
+    );
+  }
+
+  // This is the active chat input, rendered after initialization
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="relative w-full">
       <div className="absolute top-[-50px] w-full flex justify-between items-center">
