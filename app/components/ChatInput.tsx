@@ -1,3 +1,4 @@
+// components/ChatInput.tsx
 "use client";
 
 import { Send, Mic, MicOff, Loader2, StopCircle } from "lucide-react";
@@ -26,9 +27,9 @@ export default function ChatInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
-  const isLoading = status === "submitted";
   const isStreaming = status === "streaming";
   const isReady = status === "ready";
+  const isLoading = status === "submitted";
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -41,9 +42,17 @@ export default function ChatInput({
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
       const scrollHeight = textareaRef.current.scrollHeight;
-      textareaRef.current.style.height = `${Math.min(scrollHeight, 128)}px`; // Max height of 128px
+      textareaRef.current.style.height = `${Math.min(scrollHeight, 128)}px`;
     }
   }, [input]);
+
+  // --- NEW: Dynamic placeholder text based on status ---
+  const getPlaceholderText = () => {
+    if (isStreaming) return "Assistant is speaking...";
+    if (isLoading) return "Assistant is thinking...";
+    if (isRecording) return "Listening...";
+    return "Type or click the mic to speak...";
+  };
 
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="relative w-full">
@@ -56,13 +65,12 @@ export default function ChatInput({
         >
           {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
         </button>
-
         <AnimatePresence>
           {isRecording && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               className="text-sm text-red-400 flex items-center gap-2"
             >
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
@@ -71,7 +79,6 @@ export default function ChatInput({
           )}
         </AnimatePresence>
       </div>
-
       <div className="relative">
         <textarea
           ref={textareaRef}
@@ -83,12 +90,11 @@ export default function ChatInput({
               formRef.current?.requestSubmit();
             }
           }}
-          placeholder="Type or click the mic to speak..."
+          placeholder={getPlaceholderText()}
           className="w-full bg-gray-900/50 rounded-xl p-4 pr-14 resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300 overflow-y-auto custom-scrollbar"
           rows={1}
           disabled={!isReady && !isStreaming}
         />
-
         <div className="absolute bottom-3 right-3 flex items-center gap-2">
           <AnimatePresence>
             {isStreaming ? (

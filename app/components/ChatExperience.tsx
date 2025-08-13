@@ -1,3 +1,4 @@
+// components/ChatExperience.tsx
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -10,6 +11,8 @@ import ChatInput from "./ChatInput";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import { useAvatarChat } from "../hooks/useAvatarChat";
+import SystemMessage from "./SystemMessage";
+import { useDevMode } from "../hooks/use-dev-mode";
 
 export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
   const router = useRouter();
@@ -20,17 +23,17 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
+  // --- Use the dev mode hook ---
+  const isDevelopment = useDevMode();
+
   const { messages, status, error, stop, sendMessage } = useAvatarChat({
     systemPrompt: avatar.systemPrompt,
   });
 
-  // Initialize Speech Recognition
+  // ... (Speech Recognition useEffect is unchanged) ...
   useEffect(() => {
-    // The types for window.SpeechRecognition are now available globally
-    // thanks to the @types/dom-speech-recognition package.
     const SpeechRecognitionAPI =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-
+      window.SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognitionAPI) {
       console.warn("SpeechRecognition API not supported.");
       return;
@@ -39,13 +42,13 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
     recog.continuous = true;
     recog.interimResults = true;
     recog.lang = "en-US";
-    recog.onresult = (event: SpeechRecognitionEvent) => {
+    recog.onresult = (event: any) => {
       const transcript = Array.from(event.results)
         .map((result) => result[0].transcript)
         .join("");
       setInput(transcript);
     };
-    recog.onerror = (event: SpeechRecognitionErrorEvent) => {
+    recog.onerror = (event: any) => {
       console.error("Speech recognition error:", event.error);
       setIsRecording(false);
     };
@@ -53,20 +56,17 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
     setRecognition(recog);
   }, [setIsRecording]);
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleSend = (messageText: string) => {
     if (!messageText.trim() || !avatar) return;
-
     sendMessage({
       id: `user-msg-${Date.now()}`,
       role: "user",
       parts: [{ type: "text", text: messageText }],
     });
-
     setInput("");
   };
 
@@ -82,14 +82,12 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
 
   const listVariants = {
     hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: { staggerChildren: 0.15 },
-    },
+    show: { opacity: 1, transition: { staggerChildren: 0.15 } },
   };
 
   return (
     <main className="relative w-screen h-screen flex flex-col bg-gradient-to-br from-gray-900 to-gray-800 text-white overflow-hidden">
+      {/* ... (Back button is unchanged) ... */}
       <div className="absolute top-6 left-6 z-20">
         <button
           onClick={() => router.push("/")}
@@ -120,10 +118,19 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
             className="flex-grow overflow-y-auto pr-4 -mr-4 mb-4 custom-scrollbar"
             aria-live="polite"
           >
-            {messages.map((msg) => (
-              <ChatMessage key={msg.id} message={msg} />
-            ))}
-            {status === "submitted" && (
+            {/* --- "In Development" Message for Production --- */}
+            {!isDevelopment && (
+              <SystemMessage>
+                This feature is currently in development.
+                <br />
+                Full functionality will be live by 15-08-2025 (12 AM IST).
+              </SystemMessage>
+            )}
+
+            {isDevelopment &&
+              messages.map((msg) => <ChatMessage key={msg.id} message={msg} />)}
+
+            {isDevelopment && status === "submitted" && (
               <ChatMessage
                 message={{
                   id: "thinking",
@@ -134,15 +141,17 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
             )}
             <div ref={messagesEndRef} />
           </motion.div>
-          {error && (
+          {isDevelopment && error && (
             <div className="text-red-500 text-sm mb-4 p-3 bg-red-500/10 rounded-lg">
               <strong>Error:</strong> {error.message}
             </div>
           )}
+
           <ChatInput
             input={input}
             setInput={setInput}
-            onSend={handleSend}
+            // --- Disable sending in production ---
+            onSend={isDevelopment ? handleSend : () => {}}
             status={status}
             stop={stop}
             toggleRecording={toggleRecording}

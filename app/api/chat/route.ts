@@ -116,8 +116,6 @@ export async function POST(req: Request) {
       status: 500,
     });
   } finally {
-    // --- IMPORTANT: Clear the timeout ---
-    // This prevents the timeout from running if the request completes in time.
     clearTimeout(timeoutId);
   }
 }
