@@ -25,7 +25,6 @@ export default function ChatInput({
   toggleRecording,
   handleMuteToggle,
 }: ChatInputProps) {
-  // --- Get ALL necessary state from the store, including the `hasInitialized` flag ---
   const { hasInitialized, initialize, isRecording, isMuted } = useAvatarStore();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -50,17 +49,16 @@ export default function ChatInput({
   }, [input]);
 
   const handleInitialClick = () => {
-    initialize(); // Set the chat as initialized in the global store
-    toggleRecording(); // Trigger the first recording session
+    initialize();
+    toggleRecording();
   };
 
-  // --- UI FIX: This conditional render restores the onboarding UI ---
   if (!hasInitialized) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-4">
         <motion.button
           onClick={handleInitialClick}
-          className="w-24 h-24 bg-purple-600 rounded-full flex items-center justify-center text-white shadow-lg shadow-purple-600/50"
+          className="w-24 h-24 bg-gradient-to-br from-purple-600 to-blue-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-purple-600/50"
           aria-label="Start Listening"
           whileHover={{ scale: 1.1 }}
           animate={{
@@ -77,7 +75,6 @@ export default function ChatInput({
     );
   }
 
-  // This is the active chat input, rendered after initialization
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="relative w-full">
       <div className="absolute top-[-50px] w-full flex justify-between items-center">
@@ -146,7 +143,7 @@ export default function ChatInput({
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.8, opacity: 0 }}
                     type="submit"
-                    className="p-2 rounded-full bg-purple-600 hover:bg-purple-500 disabled:bg-gray-600 transition-colors"
+                    className="p-2 rounded-full bg-gradient-to-br from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 disabled:bg-gray-600 transition-colors"
                     disabled={isLoading}
                     aria-label="Send message"
                   >

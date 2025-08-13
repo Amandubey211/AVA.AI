@@ -1,14 +1,18 @@
+// components/ChatMessage.tsx
 "use client";
-
 import { motion, Variants } from "framer-motion";
 import type { UIMessage } from "@ai-sdk/react";
-import { Bot, User } from "lucide-react";
+import { Bot, User } from "lucide-react"; // Keep Bot/User for fallback/flexibility
 
 interface ChatMessageProps {
   message: UIMessage;
+  avatarCharacterName?: string; // New prop for avatar's first letter
 }
 
-export default function ChatMessage({ message }: ChatMessageProps) {
+export default function ChatMessage({
+  message,
+  avatarCharacterName,
+}: ChatMessageProps) {
   if (!message) return null;
 
   const isUser = message.role === "user";
@@ -22,7 +26,6 @@ export default function ChatMessage({ message }: ChatMessageProps) {
       opacity: 1,
       y: 0,
       transition: {
-        // Now TypeScript knows that 'type' must be "spring", "tween", etc.
         type: "spring",
         stiffness: 100,
         damping: 15,
@@ -38,13 +41,21 @@ export default function ChatMessage({ message }: ChatMessageProps) {
       }`}
     >
       {!isUser && (
-        <div className="w-10 h-10 rounded-full bg-purple-500 flex-shrink-0 flex items-center justify-center shadow-lg">
-          <Bot size={24} />
+        // AI Avatar Circle
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-blue-500 flex-shrink-0 flex items-center justify-center shadow-lg text-white font-bold text-xl uppercase">
+          {avatarCharacterName ? (
+            avatarCharacterName.charAt(0)
+          ) : (
+            <Bot size={24} />
+          )}
         </div>
       )}
       <div
-        className={`p-4 rounded-2xl max-w-md shadow-md ${
-          isUser ? "bg-blue-600 rounded-br-none" : "bg-gray-700 rounded-bl-none"
+        className={`p-4 rounded-3xl max-w-md shadow-lg backdrop-blur-md ${
+          // Added backdrop-blur-md
+          isUser
+            ? "bg-blue-600/70 rounded-br-none" // Slightly transparent for glass effect
+            : "bg-gray-700/70 rounded-bl-none" // Slightly transparent for glass effect
         }`}
       >
         <p className="text-white whitespace-pre-wrap leading-relaxed">
@@ -52,7 +63,8 @@ export default function ChatMessage({ message }: ChatMessageProps) {
         </p>
       </div>
       {isUser && (
-        <div className="w-10 h-10 rounded-full bg-blue-600 flex-shrink-0 flex items-center justify-center shadow-lg">
+        // User Avatar Circle
+        <div className="w-10 h-10 rounded-full bg-blue-600 flex-shrink-0 flex items-center justify-center shadow-lg text-white font-bold text-xl">
           <User size={24} />
         </div>
       )}

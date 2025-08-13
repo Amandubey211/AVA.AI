@@ -1,4 +1,3 @@
-// components/ChatExperience.tsx
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -11,6 +10,7 @@ import ChatInput from "./ChatInput";
 import { motion } from "framer-motion";
 import { ArrowLeft, Info } from "lucide-react";
 import { useAvatarChat } from "../hooks/useAvatarChat";
+import TypingIndicator from "./TypingIndicator";
 
 // Type definitions for robust Speech Recognition
 interface SpeechRecognitionStatic {
@@ -31,7 +31,6 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  // --- CONTEXT BUG FIX: Use a ref for the final transcript ---
   const finalTranscriptRef = useRef("");
   const isMuteAction = useRef(false);
 
@@ -40,10 +39,32 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
     setIsDevelopment(process.env.NEXT_PUBLIC_DEVELOPMENT_MODE === "true");
   }, []);
 
-  const { messages, status, error, stop, sendMessage } = useAvatarChat({
-    systemPrompt: avatar.systemPrompt,
-  });
+  const { messages, status, error, stop, sendMessage, setMessages } =
+    useAvatarChat({
+      systemPrompt: avatar.systemPrompt,
+    });
 
+  // --- Welcome Message Logic ---
+  useEffect(() => {
+    if (messages.length === 0 && isDevelopment) {
+      const welcomeMessage = `Hello! I'm ${avatar.character}. How can I help you today?`;
+      const timeoutId = setTimeout(() => {
+        setMessages([
+          {
+            id: "welcome-msg",
+            role: "assistant",
+            parts: [{ type: "text", text: welcomeMessage }],
+          },
+        ]);
+        useAvatarStore.getState().addAudioToQueue(welcomeMessage);
+        useAvatarStore.getState().playNextAudio();
+      }, 500);
+      return () => clearTimeout(timeoutId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDevelopment]);
+
+  // --- Speech Recognition Setup ---
   useEffect(() => {
     const SpeechRecognitionAPI =
       (window as IWindow).SpeechRecognition ||
@@ -89,14 +110,11 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
   }, [setIsRecording]);
 
   useEffect(() => {
-    initialize(); // Reset the `hasInitialized` flag on component mount
+    initialize();
   }, [initialize]);
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  // --- CONTEXT BUG FIX: Manually reset the transcript ref when input is cleared by the user ---
   useEffect(() => {
     if (input === "") {
       finalTranscriptRef.current = "";
@@ -111,7 +129,7 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
       parts: [{ type: "text", text: messageText }],
     });
     setInput("");
-    finalTranscriptRef.current = ""; // Also reset on send
+    finalTranscriptRef.current = "";
   };
 
   const toggleRecording = () => {
@@ -120,7 +138,7 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
       recognition?.stop();
     } else {
       setInput("");
-      finalTranscriptRef.current = ""; // Reset transcript on every new recording session
+      finalTranscriptRef.current = "";
       setMuted(false);
       recognition?.start();
       setIsRecording(true);
@@ -164,6 +182,7 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
             camera={{ position: [0, 0, 2.2], fov: 75 }}
           />
         </div>
+        {/* --- UI ENHANCEMENT: Added subtle glassmorphism background to the chat panel --- */}
         <div className="w-2/5 h-full p-6 flex flex-col bg-black/30 backdrop-blur-lg border-l-2 border-white/10">
           <div className="mb-6 text-center">
             <h2 className="text-4xl font-bold tracking-tight">{`Chat with ${avatar.character}`}</h2>
@@ -176,6 +195,7 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
             className="flex-grow overflow-y-auto pr-4 -mr-4 mb-4 custom-scrollbar"
             aria-live="polite"
           >
+            {/* Display "Development" message if applicable */}
             {!isDevelopment && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -190,24 +210,22 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
                 </div>
               </motion.div>
             )}
+
+            {/* Render messages based on development mode */}
             {isDevelopment &&
-              messages.map((msg) => <ChatMessage key={msg.id} message={msg} />)}
-            {isDevelopment && status === "submitted" && (
-              <ChatMessage
-                message={{
-                  id: "thinking",
-                  role: "assistant",
-                  parts: [{ type: "text", text: "Thinking..." }],
-                }}
-              />
-            )}
+              messages.map((msg) => (
+                // --- UI ENHANCEMENT: Pass avatar character name to ChatMessage ---
+                <ChatMessage
+                  key={msg.id}
+                  message={msg}
+                  avatarCharacterName={avatar.character}
+                />
+              ))}
+
+            {isDevelopment && status === "submitted" && <TypingIndicator />}
             <div ref={messagesEndRef} />
           </motion.div>
-          {isDevelopment && error && (
-            <div className="text-red-500 text-sm mb-4 p-3 bg-red-500/10 rounded-lg">
-              <strong>Error:</strong> {error.message}
-            </div>
-          )}
+
           <ChatInput
             input={input}
             setInput={setInput}
