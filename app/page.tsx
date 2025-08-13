@@ -2,7 +2,7 @@
 
 import AvatarGrid from "./components/AvatarGrid";
 import FeaturedCarousel from "./components/FeaturedCarousel";
-import Hero from "./components/Hero";
+// import Hero from "./components/Hero";
 import { avatars } from "./lib/avatars";
 import { Metadata } from "next";
 

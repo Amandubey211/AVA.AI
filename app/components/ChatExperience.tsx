@@ -14,6 +14,18 @@ import { useAvatarChat } from "../hooks/useAvatarChat";
 import SystemMessage from "./SystemMessage";
 import { useDevMode } from "../hooks/use-dev-mode";
 
+// --- THE DEFINITIVE TYPE-SAFE SPEECH RECOGNITION SETUP ---
+// 1. Define an interface for the SpeechRecognition constructor
+interface SpeechRecognitionStatic {
+  new (): SpeechRecognition;
+}
+
+// 2. Extend the global Window interface to include both standard and vendor-prefixed versions
+interface IWindow extends Window {
+  SpeechRecognition: SpeechRecognitionStatic;
+  webkitSpeechRecognition: SpeechRecognitionStatic;
+}
+
 export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
   const router = useRouter();
   const { isRecording, setIsRecording } = useAvatarStore();
@@ -23,17 +35,18 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  // --- Use the dev mode hook ---
   const isDevelopment = useDevMode();
 
   const { messages, status, error, stop, sendMessage } = useAvatarChat({
     systemPrompt: avatar.systemPrompt,
   });
 
-  // ... (Speech Recognition useEffect is unchanged) ...
   useEffect(() => {
+    // 3. Use the extended IWindow type for the window object
     const SpeechRecognitionAPI =
-      window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+      (window as IWindow).SpeechRecognition ||
+      (window as IWindow).webkitSpeechRecognition;
+
     if (!SpeechRecognitionAPI) {
       console.warn("SpeechRecognition API not supported.");
       return;
@@ -42,16 +55,21 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
     recog.continuous = true;
     recog.interimResults = true;
     recog.lang = "en-US";
-    recog.onresult = (event: any) => {
+
+    // 4. Use the correct `SpeechRecognitionEvent` type
+    recog.onresult = (event: SpeechRecognitionEvent) => {
       const transcript = Array.from(event.results)
         .map((result) => result[0].transcript)
         .join("");
       setInput(transcript);
     };
-    recog.onerror = (event: any) => {
+
+    // 5. Use the correct `SpeechRecognitionErrorEvent` type, removing the `any`
+    recog.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error("Speech recognition error:", event.error);
       setIsRecording(false);
     };
+
     recog.onend = () => setIsRecording(false);
     setRecognition(recog);
   }, [setIsRecording]);
@@ -87,7 +105,6 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
 
   return (
     <main className="relative w-screen h-screen flex flex-col bg-gradient-to-br from-gray-900 to-gray-800 text-white overflow-hidden">
-      {/* ... (Back button is unchanged) ... */}
       <div className="absolute top-6 left-6 z-20">
         <button
           onClick={() => router.push("/")}
@@ -118,7 +135,6 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
             className="flex-grow overflow-y-auto pr-4 -mr-4 mb-4 custom-scrollbar"
             aria-live="polite"
           >
-            {/* --- "In Development" Message for Production --- */}
             {!isDevelopment && (
               <SystemMessage>
                 This feature is currently in development.
@@ -146,11 +162,9 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
               <strong>Error:</strong> {error.message}
             </div>
           )}
-
           <ChatInput
             input={input}
             setInput={setInput}
-            // --- Disable sending in production ---
             onSend={isDevelopment ? handleSend : () => {}}
             status={status}
             stop={stop}
