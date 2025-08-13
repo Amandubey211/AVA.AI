@@ -13,6 +13,7 @@ interface ChatInputProps {
   status: ChatStatus;
   stop: () => void;
   toggleRecording: () => void;
+  handleMuteToggle: () => void;
 }
 
 export default function ChatInput({
@@ -22,14 +23,15 @@ export default function ChatInput({
   status,
   stop,
   toggleRecording,
+  handleMuteToggle,
 }: ChatInputProps) {
-  const { isRecording, isMuted, toggleMute } = useAvatarStore();
+  const { isRecording, isMuted } = useAvatarStore();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
+  const isLoading = status === "submitted";
   const isStreaming = status === "streaming";
   const isReady = status === "ready";
-  const isLoading = status === "submitted";
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -46,20 +48,12 @@ export default function ChatInput({
     }
   }, [input]);
 
-  // --- NEW: Dynamic placeholder text based on status ---
-  const getPlaceholderText = () => {
-    if (isStreaming) return "Assistant is speaking...";
-    if (isLoading) return "Assistant is thinking...";
-    if (isRecording) return "Listening...";
-    return "Type or click the mic to speak...";
-  };
-
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="relative w-full">
       <div className="absolute top-[-50px] w-full flex justify-between items-center">
         <button
           type="button"
-          onClick={toggleMute}
+          onClick={handleMuteToggle}
           className="p-2 text-gray-400 hover:text-white transition-colors"
           aria-label={isMuted ? "Unmute" : "Mute"}
         >
@@ -71,10 +65,13 @@ export default function ChatInput({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="text-sm text-red-400 flex items-center gap-2"
+              className="text-sm flex items-center gap-2"
+              style={{ color: isMuted ? "#9CA3AF" : "#F87171" }}
             >
-              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-              Listening...
+              {!isMuted && (
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+              )}
+              {isMuted ? "Muted" : "Listening..."}
             </motion.div>
           )}
         </AnimatePresence>
@@ -90,7 +87,7 @@ export default function ChatInput({
               formRef.current?.requestSubmit();
             }
           }}
-          placeholder={getPlaceholderText()}
+          placeholder="Type or click the mic to speak..."
           className="w-full bg-gray-900/50 rounded-xl p-4 pr-14 resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300 overflow-y-auto custom-scrollbar"
           rows={1}
           disabled={!isReady && !isStreaming}
@@ -120,8 +117,8 @@ export default function ChatInput({
                     exit={{ scale: 0.8, opacity: 0 }}
                     type="submit"
                     className="p-2 rounded-full bg-purple-600 hover:bg-purple-500 disabled:bg-gray-600 transition-colors"
-                    disabled={isLoading || !input.trim()}
-                    aria-label={isLoading ? "Sending message" : "Send message"}
+                    disabled={isLoading}
+                    aria-label="Send message"
                   >
                     {isLoading ? (
                       <Loader2 className="animate-spin" size={24} />
@@ -139,7 +136,9 @@ export default function ChatInput({
                     onClick={toggleRecording}
                     className={`p-2 rounded-full transition-colors ${
                       isRecording
-                        ? "bg-red-600 hover:bg-red-500"
+                        ? isMuted
+                          ? "bg-gray-600"
+                          : "bg-red-600 hover:bg-red-500 animate-pulse"
                         : "bg-blue-600 hover:bg-blue-500"
                     }`}
                     aria-label={

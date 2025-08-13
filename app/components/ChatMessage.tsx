@@ -1,6 +1,5 @@
 "use client";
 
-// 1. Import the 'Variants' type from framer-motion
 import { motion, Variants } from "framer-motion";
 import type { UIMessage } from "@ai-sdk/react";
 import { Bot, User } from "lucide-react";
@@ -17,7 +16,6 @@ export default function ChatMessage({ message }: ChatMessageProps) {
     ? message.parts.find((part) => part.type === "text")?.text || ""
     : "";
 
-  // 2. Apply the 'Variants' type to your variants object
   const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     show: {

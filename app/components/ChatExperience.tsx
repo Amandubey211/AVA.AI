@@ -9,18 +9,13 @@ import AvatarCanvas from "./AvatarCanvas";
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
 import { motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Info } from "lucide-react";
 import { useAvatarChat } from "../hooks/useAvatarChat";
-import SystemMessage from "./SystemMessage";
-import { useDevMode } from "../hooks/use-dev-mode";
 
-// --- THE DEFINITIVE TYPE-SAFE SPEECH RECOGNITION SETUP ---
-// 1. Define an interface for the SpeechRecognition constructor
+// Type definitions for robust Speech Recognition
 interface SpeechRecognitionStatic {
   new (): SpeechRecognition;
 }
-
-// 2. Extend the global Window interface to include both standard and vendor-prefixed versions
 interface IWindow extends Window {
   SpeechRecognition: SpeechRecognitionStatic;
   webkitSpeechRecognition: SpeechRecognitionStatic;
@@ -28,52 +23,72 @@ interface IWindow extends Window {
 
 export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
   const router = useRouter();
-  const { isRecording, setIsRecording } = useAvatarStore();
+  const { isRecording, setIsRecording, isMuted, setMuted, initialize } =
+    useAvatarStore();
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(
     null
   );
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  const isDevelopment = useDevMode();
+  // --- THE DEFINITIVE FIX: A ref to track the reason for stopping recognition ---
+  // This ref will tell our `onend` handler whether to *truly* stop the session.
+  const isMuteAction = useRef(false);
+
+  const [isDevelopment, setIsDevelopment] = useState(false);
+  useEffect(() => {
+    setIsDevelopment(process.env.NEXT_PUBLIC_DEVELOPMENT_MODE === "true");
+  }, []);
 
   const { messages, status, error, stop, sendMessage } = useAvatarChat({
     systemPrompt: avatar.systemPrompt,
   });
 
+  // Initialize Speech Recognition
   useEffect(() => {
-    // 3. Use the extended IWindow type for the window object
     const SpeechRecognitionAPI =
       (window as IWindow).SpeechRecognition ||
       (window as IWindow).webkitSpeechRecognition;
-
     if (!SpeechRecognitionAPI) {
       console.warn("SpeechRecognition API not supported.");
       return;
     }
+
     const recog = new SpeechRecognitionAPI();
     recog.continuous = true;
     recog.interimResults = true;
     recog.lang = "en-US";
-
-    // 4. Use the correct `SpeechRecognitionEvent` type
     recog.onresult = (event: SpeechRecognitionEvent) => {
+      if (useAvatarStore.getState().isMuted) return;
       const transcript = Array.from(event.results)
         .map((result) => result[0].transcript)
         .join("");
       setInput(transcript);
     };
-
-    // 5. Use the correct `SpeechRecognitionErrorEvent` type, removing the `any`
     recog.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error("Speech recognition error:", event.error);
       setIsRecording(false);
     };
 
-    recog.onend = () => setIsRecording(false);
+    // --- THE DEFINITIVE FIX: The "smart" onend handler ---
+    recog.onend = () => {
+      // This handler now checks our flag.
+      // If the stop was caused by a mute/unmute action, we do nothing.
+      if (isMuteAction.current) {
+        // Reset the flag for the next action.
+        isMuteAction.current = false;
+        return;
+      }
+      // If it was a "natural" stop (e.g., user clicked the main stop button),
+      // then we update the state.
+      setIsRecording(false);
+    };
     setRecognition(recog);
   }, [setIsRecording]);
 
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -88,14 +103,32 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
     setInput("");
   };
 
+  // --- THE DEFINITIVE, BUG-FREE LOGIC ---
   const toggleRecording = () => {
     if (isRecording) {
+      isMuteAction.current = false; // This is a real stop, not a mute action.
       recognition?.stop();
     } else {
       setInput("");
+      setMuted(false);
       recognition?.start();
+      setIsRecording(true);
     }
-    setIsRecording(!isRecording);
+  };
+
+  const handleMuteToggle = () => {
+    const nextMutedState = !isMuted;
+    setMuted(nextMutedState);
+
+    if (isRecording) {
+      isMuteAction.current = true; // Signal to `onend` to ignore this stop.
+      recognition?.stop();
+
+      if (!nextMutedState) {
+        // If unmuting, immediately restart. The `onend` event will be ignored.
+        recognition?.start();
+      }
+    }
   };
 
   const listVariants = {
@@ -136,16 +169,21 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
             aria-live="polite"
           >
             {!isDevelopment && (
-              <SystemMessage>
-                This feature is currently in development.
-                <br />
-                Full functionality will be live by 15-08-2025 (12 AM IST).
-              </SystemMessage>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center justify-center gap-3 my-4 p-3 text-sm text-gray-400 bg-gray-800 rounded-lg"
+              >
+                <Info size={18} />
+                <div className="text-center">
+                  This feature is currently in development.
+                  <br />
+                  Full functionality will be live by 15-08-2025 (12 AM IST).
+                </div>
+              </motion.div>
             )}
-
             {isDevelopment &&
               messages.map((msg) => <ChatMessage key={msg.id} message={msg} />)}
-
             {isDevelopment && status === "submitted" && (
               <ChatMessage
                 message={{
@@ -169,6 +207,7 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
             status={status}
             stop={stop}
             toggleRecording={toggleRecording}
+            handleMuteToggle={handleMuteToggle}
           />
         </div>
       </div>
