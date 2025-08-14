@@ -1,7 +1,7 @@
 "use client";
 import React, { Suspense } from "react";
 import { motion } from "framer-motion";
-import Image from "next/image"; // Import Next.js Image component for optimization
+import Image from "next/image";
 
 // React Three Fiber Imports
 import { Canvas } from "@react-three/fiber";
@@ -36,7 +36,7 @@ function HeroScene() {
       {/* 3D Text: "AI That Understands You" */}
       <Text
         font="/fonts/Anton-Regular.ttf" // Ensure this font path is correct in your public/fonts directory
-        fontSize={2.5} // Adjusted font size to fit well on screen
+        fontSize={3.5} // Adjusted font size to fit well on screen
         position={[0, 0, 0]} // Keep text at Z=0 for easy light targeting
         textAlign="center"
         color="white" // Text itself is white, bloom makes it purple
@@ -68,7 +68,7 @@ export default function Hero() {
       <Canvas
         camera={{ position: [0, 0, 8], fov: 60 }} // Camera setup for responsiveness and framing
         dpr={[1, 1.5]}
-        className="absolute inset-0 z-10 mt-10" // Crucial: R3F Canvas is the bottom-most layer (excluding pure black bg)
+        className="absolute inset-0 z-10 mt-14" // Crucial: R3F Canvas is the bottom-most layer (excluding pure black bg)
       >
         <Suspense fallback={null}>
           <HeroScene />
