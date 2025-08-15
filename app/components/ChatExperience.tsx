@@ -182,7 +182,6 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
             camera={{ position: [0, 0, 2.2], fov: 75 }}
           />
         </div>
-        {/* --- UI ENHANCEMENT: Added subtle glassmorphism background to the chat panel --- */}
         <div className="w-2/5 h-full p-6 flex flex-col bg-black/30 backdrop-blur-lg border-l-2 border-white/10">
           <div className="mb-6 text-center">
             <h2 className="text-4xl font-bold tracking-tight">{`Chat with ${avatar.character}`}</h2>
