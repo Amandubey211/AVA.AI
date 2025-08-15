@@ -1,120 +1,251 @@
 "use client";
-import React, { Suspense } from "react";
-import { motion } from "framer-motion";
+import React, {
+  Suspense,
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+} from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
-// React Three Fiber Imports
 import { Canvas } from "@react-three/fiber";
 import { Text, Environment, Preload } from "@react-three/drei";
 import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
-import { KernelSize } from "postprocessing"; // Needed for Bloom's kernelSize
-import { Color } from "three"; // Import Color for light
+import { KernelSize } from "postprocessing";
+import { Color } from "three";
 
-// Import the background image. Ensure the path is correct for your project.
 import heroBackgroundImage from "@/public/images/ui/home/heroimage.png";
 
-// Component for the 3D scene (Text and Post-processing effects)
-function HeroScene() {
-  // Define the vibrant purple color for the light
-  const purpleLightColor = new Color("#8A2BE2"); // BlueViolet
+function VideoModal({
+  isOpen,
+  onClose,
+  videoUrl,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  videoUrl: string;
+}) {
+  const modalContentRef = useRef<HTMLDivElement>(null);
+
+  // Manual Scroll Lock
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  // Manual Focus Trap
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (!isOpen || !modalContentRef.current) return;
+      const focusableElements = modalContentRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      const firstFocusableEl = focusableElements[0] as HTMLElement;
+      const lastFocusableEl = focusableElements[
+        focusableElements.length - 1
+      ] as HTMLElement;
+      if (e.key === "Tab") {
+        if (e.shiftKey) {
+          if (document.activeElement === firstFocusableEl) {
+            lastFocusableEl?.focus();
+            e.preventDefault();
+          }
+        } else {
+          if (document.activeElement === lastFocusableEl) {
+            firstFocusableEl?.focus();
+            e.preventDefault();
+          }
+        }
+      }
+    },
+    [isOpen]
+  );
+
+  useEffect(() => {
+    if (isOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+      modalContentRef.current?.focus();
+    } else {
+      window.removeEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, handleKeyDown]);
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 md:p-8 bg-black/90 modal-backdrop-blur"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+        >
+          <motion.div
+            ref={modalContentRef}
+            tabIndex={-1}
+            role="dialog"
+            aria-modal="true"
+            className="relative w-full max-w-3xl bg-gray-900/80 rounded-2xl overflow-hidden border border-white/10 shadow-2xl"
+            initial={{ scale: 0.9, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.9, y: 20 }}
+            transition={{ type: "spring", stiffness: 150, damping: 20 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative pt-[56.25%]">
+              {" "}
+              {/* 16:9 aspect ratio */}
+              <iframe
+                src={videoUrl}
+                className="absolute top-0 left-0 w-full h-full"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                title="AVA.AI Demo Video"
+              />
+            </div>
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 p-2 rounded-full bg-black/50 hover:bg-black/80 text-white transition-colors z-10"
+              aria-label="Close modal"
+            >
+              <svg
+                xmlns="https://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+            <div className="p-4 bg-gray-900/80 border-t border-white/10 text-center text-sm text-gray-300">
+              Your AI Companion Demo
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function HeroScene({ fontSize }: { fontSize: number }) {
+  const textColor = new Color("#FFFFFF");
+  const purpleColor = new Color("#8A2BE2");
+  const pinkColor = new Color("#FF10F0");
 
   return (
     <>
-      {/* Environment for basic global lighting/mood */}
       <Environment preset="night" />
-
-      {/* SpotLight to illuminate the text and create the purple glow */}
       <spotLight
-        position={[0, 0, 5]} // Positioned slightly in front of the text to hit it
-        intensity={200} // Increased intensity for a stronger light
-        angle={Math.PI / 8} // Narrower cone for more focused light
-        penumbra={1} // Soft edges for the light cone
-        color={purpleLightColor} // The purple color for the glow
-        castShadow // Enable shadows if other objects are added later
+        position={[-5, 0, 5]}
+        intensity={150}
+        angle={Math.PI / 6}
+        penumbra={0.5}
+        color={purpleColor}
       />
-
-      {/* 3D Text: "AI That Understands You" */}
+      <spotLight
+        position={[5, 0, 5]}
+        intensity={150}
+        angle={Math.PI / 6}
+        penumbra={0.5}
+        color={pinkColor}
+      />
       <Text
-        font="/fonts/Anton-Regular.ttf" // Ensure this font path is correct in your public/fonts directory
-        fontSize={3.5} // Adjusted font size to fit well on screen
-        position={[0, 0, 0]} // Keep text at Z=0 for easy light targeting
+        font="/fonts/Anton-Regular.ttf"
+        fontSize={fontSize}
+        position={[0, 0, 0]}
         textAlign="center"
-        color="white" // Text itself is white, bloom makes it purple
+        color={textColor}
         anchorX="center"
         anchorY="middle"
       >
         AI That Understands You
       </Text>
-
-      {/* Post-processing Effects for the strong bloom */}
       <EffectComposer>
         <Bloom
-          kernelSize={KernelSize.LARGE} // Adjust KernelSize (SMALL, MEDIUM, LARGE, VERY_LARGE)
-          luminanceThreshold={0.001} // Very low threshold to make almost everything bloom
-          luminanceSmoothing={0.7} // Higher smoothing for a more uniform, diffused bloom
-          intensity={3.0} // High intensity for a super strong glow
-          mipmapBlur={true} // Smoother bloom effect
+          kernelSize={KernelSize.LARGE}
+          luminanceThreshold={0}
+          luminanceSmoothing={0.9}
+          intensity={3.5}
+          mipmapBlur={true}
         />
-        <Vignette eskil={false} offset={0.1} darkness={1.8} />
+        <Vignette eskil={false} offset={0.1} darkness={1.5} />
       </EffectComposer>
     </>
   );
 }
 
 export default function Hero() {
+  const router = useRouter();
+  const [fontSize, setFontSize] = useState(3.5);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const videoId = "40UcgTHhIWY";
+  const demoVideoUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&controls=0&mute=1&showinfo=0&rel=0`;
+
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width < 640) setFontSize(1.8);
+      else if (width < 768) setFontSize(2.2);
+      else if (width < 1024) setFontSize(2.8);
+      else setFontSize(3.5);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsModalOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   return (
     <section className="relative w-full h-screen bg-black flex flex-col items-center justify-end overflow-hidden">
-      {/* 1. React Three Fiber Canvas (for 3D text and bloom) - positioned at z-10 (lowest layer) */}
       <Canvas
-        camera={{ position: [0, 0, 8], fov: 60 }} // Camera setup for responsiveness and framing
+        camera={{ position: [0, 0, 8], fov: 60 }}
         dpr={[1, 1.5]}
-        className="absolute inset-0 z-10 mt-14" // Crucial: R3F Canvas is the bottom-most layer (excluding pure black bg)
+        className="absolute inset-0 z-10 mt-14"
       >
         <Suspense fallback={null}>
-          <HeroScene />
+          <HeroScene fontSize={fontSize} />
         </Suspense>
         <Preload all />
       </Canvas>
 
-      {/* 2. Background Image (Character models) - positioned at z-20, ABOVE the R3F Canvas */}
       <Image
         src={heroBackgroundImage}
         alt="Background character models"
         layout="fill"
         objectFit="cover"
         quality={90}
-        className="absolute z-20" // Characters sit in front of the 3D text
+        className="absolute z-20"
         priority
       />
 
-      {/* 3. Dark Overlay (to make the background darker and text pop) - positioned at z-30, above the image */}
-      <div className="absolute inset-0 bg-black/50 z-30 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-black/50 z-30 pointer-events-none modal-backdrop-blur"></div>
 
-      {/* 4. Scattered White Dots (Stars) - positioned at z-40, above the dark overlay */}
-      <div className="absolute inset-0 z-40 pointer-events-none">
-        <div
-          className="w-full h-full"
-          style={{
-            backgroundImage: `
-              radial-gradient(circle at 15% 25%, rgba(255,255,255,0.4) 1px, transparent 1px),
-              radial-gradient(circle at 85% 70%, rgba(255,255,255,0.3) 1px, transparent 1px),
-              radial-gradient(circle at 40% 55%, rgba(255,255,255,0.5) 1px, transparent 1px),
-              radial-gradient(circle at 60% 10%, rgba(255,255,255,0.2) 1px, transparent 1px),
-              radial-gradient(circle at 25% 90%, rgba(255,255,255,0.4) 1px, transparent 1px),
-              radial-gradient(circle at 75% 30%, rgba(255,255,255,0.3) 1px, transparent 1px)
-            `,
-            backgroundSize: "200px 200px",
-            opacity: 0.8,
-          }}
-        />
-      </div>
-
-      {/* 5. Main Content Container (Foreground HTML: "YOUR AI COMPANION" text, Paragraph, and Button) */}
-      {/* Positioned at z-50, ensuring it's on top of ALL background elements */}
       <div className="relative z-50 flex flex-col items-center text-center p-4 pb-16">
-        {" "}
-        {/* Adjusted padding for lower placement */}
-        {/* "YOUR AI COMPANION" text at the top (corresponds to "AVATARS THAT GO") */}
         <motion.p
           className="text-white text-sm sm:text-base tracking-widest uppercase mb-4 opacity-70"
           initial={{ opacity: 0, y: 20 }}
@@ -123,7 +254,6 @@ export default function Hero() {
         >
           YOUR AI COMPANION
         </motion.p>
-        {/* Paragraph: "Your personal, judgment-free companion..." */}
         <motion.p
           className="max-w-xl mx-auto text-base sm:text-lg text-gray-300 mb-10 mt-4"
           initial={{ opacity: 0, y: 20 }}
@@ -133,22 +263,41 @@ export default function Hero() {
           Your personal, judgment-free companion. Here to help you practice
           conversations, explore ideas, and achieve your goals.
         </motion.p>
-        {/* Call to Action Button: "Meet Your Assistant" */}
-        <motion.button
-          className="px-10 py-4 bg-transparent border border-white/20 text-white rounded-full font-bold text-lg backdrop-blur-sm transition-all duration-300"
-          style={{
-            boxShadow: "0 0 15px rgba(255, 255, 255, 0.1)",
-          }}
-          whileHover={{
-            scale: 1.05,
-            borderColor: "rgba(255, 255, 255, 0.4)",
-            boxShadow: "0 0 25px rgba(255, 255, 255, 0.2)",
-          }}
-          whileTap={{ scale: 0.95 }}
-        >
-          Meet Your Assistant
-        </motion.button>
+
+        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+          <motion.button
+            className="px-6 sm:px-10 py-3 sm:py-4 bg-transparent border border-white/20 text-white rounded-full font-bold text-base sm:text-lg backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/40"
+            style={{ boxShadow: "0 0 15px rgba(255, 255, 255, 0.1)" }}
+            whileHover={{
+              scale: 1.05,
+              boxShadow: "0 0 25px rgba(255, 255, 255, 0.2)",
+            }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => router.push("/chat/alex-english-tutor")}
+          >
+            Meet Your Assistant
+          </motion.button>
+
+          <motion.button
+            className="px-6 sm:px-10 py-3 sm:py-4 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-full font-bold text-base sm:text-lg transition-all duration-300 hover:from-purple-500 hover:to-pink-400"
+            style={{ boxShadow: "0 0 15px rgba(139, 92, 246, 0.5)" }}
+            whileHover={{
+              scale: 1.05,
+              boxShadow: "0 0 25px rgba(236, 72, 153, 0.6)",
+            }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsModalOpen(true)}
+          >
+            View Demo
+          </motion.button>
+        </div>
       </div>
+
+      <VideoModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        videoUrl={demoVideoUrl}
+      />
     </section>
   );
 }
