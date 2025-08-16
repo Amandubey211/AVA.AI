@@ -50,7 +50,13 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
     setIsDevelopment(process.env.NEXT_PUBLIC_DEVELOPMENT_MODE === "true");
   }, []);
 
-  const { messages, status, error, stop, sendMessage, setMessages } =
+  const {
+    messages,
+    status,
+    stop,
+    sendMessage,
+    setMessages,
+  } = // use error as well we have it
     useAvatarChat({
       systemPrompt: avatar.systemPrompt,
       ttsVoiceId: avatar.ttsVoiceId,
