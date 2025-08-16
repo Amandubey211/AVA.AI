@@ -1,4 +1,3 @@
-// app/hooks/useAvatarChat.ts
 "use client";
 
 import React from "react";
@@ -10,74 +9,67 @@ import { useAvatarStore } from "../store/avatarStore";
 
 interface UseAvatarChatParams {
   systemPrompt: string;
+  ttsVoiceId: string;
 }
 
-export function useAvatarChat({ systemPrompt }: UseAvatarChatParams) {
-  const { setSpeaking, setChatStatus, addAudioToQueue, playNextAudio } =
-    useAvatarStore();
+export function useAvatarChat({
+  systemPrompt,
+  ttsVoiceId,
+}: UseAvatarChatParams) {
+  const {
+    setSpeaking,
+    setChatStatus,
+    addAudioToQueue,
+    playNextAudio,
+    setEmotion,
+  } = useAvatarStore();
 
   const chat = useChat({
     transport: new DefaultChatTransport({
       api: "/api/chat", // ✅ uses default transport
     }),
 
-    // ✅ Handle complete AI responses for TTS
-    onFinish: ({ message }) => {
-      const textContent =
-        message?.parts
-          ?.filter((part) => part.type === "text")
-          .map((part) => (part as { type: "text"; text: string }).text)
-          .join("")
-          .trim() ?? "";
+    onError: (error) => {
+      toast.error("Sorry, an error occurred.");
+      console.error("Chat error:", error);
+      setSpeaking(false);
+      setEmotion(null);
+    },
 
-      if (textContent) {
-        addAudioToQueue(textContent);
+    onFinish: ({ message }) => {
+      const finalText =
+        message?.parts.find((p) => p.type === "text")?.text.trim() ?? "";
+      const sentimentRegex = /\[([a-zA-Z]+)\]\s*$/;
+      const match = finalText.match(sentimentRegex);
+      const extractedEmotion = match ? match[1].toLowerCase() : "neutral";
+      const cleanedText = finalText.replace(sentimentRegex, "").trim();
+
+      setEmotion(extractedEmotion);
+
+      if (cleanedText) {
+        addAudioToQueue(cleanedText, ttsVoiceId);
         playNextAudio();
       } else {
         setSpeaking(false);
+        setTimeout(() => setEmotion(null), 1500);
       }
-    },
-
-    // ✅ Network/API errors
-    onError: (error) => {
-      toast.error("Sorry, an error occurred. Please try again.");
-      console.error("Chat error:", error);
-      setSpeaking(false);
     },
   });
 
-  // ✅ Sync chat status with avatar UI states
   React.useEffect(() => {
     setChatStatus(chat.status);
-    if (chat.status === "submitted" || chat.status === "streaming") {
+    // This now correctly represents the "thinking" animation state.
+    if (chat.status === "submitted") {
       setSpeaking(true);
+      setEmotion(null);
     }
-  }, [chat.status, setChatStatus, setSpeaking]);
+  }, [chat.status, setChatStatus, setSpeaking, setEmotion]);
 
-  // ✅ Enhanced sendMessage to always include systemPrompt
-  const sendMessage = (message: UIMessage | string) => {
-    // Clear any leftover TTS audio queue
+  const sendMessage = (message: UIMessage) => {
     useAvatarStore.getState().audioQueue = [];
-
-    if (typeof message === "string") {
-      chat.sendMessage(
-        {
-          role: "user",
-          parts: [{ type: "text", text: message }],
-        },
-        {
-          body: { systemPrompt },
-        }
-      );
-    } else {
-      chat.sendMessage(message, {
-        body: { systemPrompt },
-      });
-    }
+    setEmotion(null);
+    chat.sendMessage(message, { body: { systemPrompt } });
   };
 
-  return {
-    ...chat,
-    sendMessage,
-  };
+  return { ...chat, sendMessage };
 }

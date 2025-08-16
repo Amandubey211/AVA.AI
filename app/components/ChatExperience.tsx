@@ -1,3 +1,4 @@
+// components/ChatExperience.tsx
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -39,12 +40,12 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
     setIsDevelopment(process.env.NEXT_PUBLIC_DEVELOPMENT_MODE === "true");
   }, []);
 
-  const { messages, status, error, stop, sendMessage, setMessages } =
-    useAvatarChat({
-      systemPrompt: avatar.systemPrompt,
-    });
+  const { messages, status, stop, sendMessage, setMessages } = useAvatarChat({
+    systemPrompt: avatar.systemPrompt,
+    ttsVoiceId: avatar.ttsVoiceId,
+  });
 
-  // --- Welcome Message Logic ---
+  // Welcome Message Logic
   useEffect(() => {
     if (messages.length === 0 && isDevelopment) {
       const welcomeMessage = `Hello! I'm ${avatar.character}. How can I help you today?`;
@@ -56,7 +57,9 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
             parts: [{ type: "text", text: welcomeMessage }],
           },
         ]);
-        useAvatarStore.getState().addAudioToQueue(welcomeMessage);
+        useAvatarStore
+          .getState()
+          .addAudioToQueue(welcomeMessage, avatar.ttsVoiceId);
         useAvatarStore.getState().playNextAudio();
       }, 500);
       return () => clearTimeout(timeoutId);
@@ -64,7 +67,7 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDevelopment]);
 
-  // --- Speech Recognition Setup ---
+  // Speech Recognition Setup (with all bug fixes)
   useEffect(() => {
     const SpeechRecognitionAPI =
       (window as IWindow).SpeechRecognition ||
@@ -73,12 +76,10 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
       console.warn("SpeechRecognition API not supported.");
       return;
     }
-
     const recog = new SpeechRecognitionAPI();
     recog.continuous = true;
     recog.interimResults = true;
     recog.lang = "en-US";
-
     recog.onresult = (event: SpeechRecognitionEvent) => {
       if (useAvatarStore.getState().isMuted) return;
       let interimTranscript = "";
@@ -91,7 +92,6 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
       }
       setInput(finalTranscriptRef.current + interimTranscript);
     };
-
     recog.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error("Speech recognition error:", event.error);
       setIsRecording(false);
@@ -103,18 +103,22 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
       isMuteAction.current = false;
     };
     setRecognition(recog);
-
     return () => {
       recog.stop();
     };
   }, [setIsRecording]);
 
+  // Initialize UI state on component mount
   useEffect(() => {
     initialize();
   }, [initialize]);
+
+  // Auto-scroll logic
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Stale transcript bug fix
   useEffect(() => {
     if (input === "") {
       finalTranscriptRef.current = "";
@@ -134,6 +138,9 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
 
   const toggleRecording = () => {
     if (isRecording) {
+      if (input.trim()) {
+        handleSend(input);
+      }
       isMuteAction.current = false;
       recognition?.stop();
     } else {
@@ -175,65 +182,84 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
         </button>
       </div>
       <div className="flex flex-1 overflow-hidden">
+        {/* The CSS background container */}
         <div className="w-3/5 h-full relative">
-          <AvatarCanvas
-            modelUrl={avatar.modelUrl}
-            isSpeaking={useAvatarStore((s) => s.isSpeaking)}
-            camera={{ position: [0, 0, 2.2], fov: 75 }}
+          <div
+            className="absolute inset-0 z-0 bg-cover bg-center"
+            // style={{ backgroundImage: `url(${avatar.bgImageUrl})` }} // Uncomment if you have a background image
           />
-        </div>
-        <div className="w-2/5 h-full p-6 flex flex-col bg-black/30 backdrop-blur-lg border-l-2 border-white/10">
-          <div className="mb-6 text-center">
-            <h2 className="text-4xl font-bold tracking-tight">{`Chat with ${avatar.character}`}</h2>
-            <p className="text-gray-400 mt-1">{avatar.shortDescription}</p>
+          <div className="relative z-10 w-full h-full">
+            <AvatarCanvas
+              modelUrl={avatar.modelUrl}
+              expressions={avatar.expressions}
+              idleAnimationUrl={avatar.idleAnimationUrl}
+              camera={{ position: [0, 0, 2.2], fov: 75 }}
+            />
           </div>
+        </div>
+        <div className="w-2/5 h-full flex flex-col bg-black/40 backdrop-blur-xl border-l-2 border-white/10">
+          {/* Header Section */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="p-4 flex items-center gap-4 border-b border-white/10"
+          >
+            <button
+              onClick={() => router.push("/")}
+              className="p-2 rounded-full hover:bg-white/10 transition-colors"
+              aria-label="Back to Gallery"
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <div className="flex-grow">
+              <h2 className="text-xl font-bold tracking-tight">{`Chat with ${avatar.character}`}</h2>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <p className="text-xs text-green-400">Online</p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Message List */}
           <motion.div
             variants={listVariants}
             initial="hidden"
             animate="show"
-            className="flex-grow overflow-y-auto pr-4 -mr-4 mb-4 custom-scrollbar"
+            className="flex-grow overflow-y-auto p-6 custom-scrollbar"
             aria-live="polite"
           >
-            {/* Display "Development" message if applicable */}
-            {!isDevelopment && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center justify-center gap-3 my-4 p-3 text-sm text-gray-400 bg-gray-800 rounded-lg"
-              >
-                <Info size={18} />
-                <div className="text-center">
-                  This feature is currently in development.
-                  <br />
-                  Full functionality will be live by 15-08-2025 (12 AM IST).
-                </div>
-              </motion.div>
-            )}
-
-            {/* Render messages based on development mode */}
             {isDevelopment &&
               messages.map((msg) => (
-                // --- UI ENHANCEMENT: Pass avatar character name to ChatMessage ---
                 <ChatMessage
                   key={msg.id}
                   message={msg}
                   avatarCharacterName={avatar.character}
                 />
               ))}
-
             {isDevelopment && status === "submitted" && <TypingIndicator />}
             <div ref={messagesEndRef} />
           </motion.div>
 
-          <ChatInput
-            input={input}
-            setInput={setInput}
-            onSend={isDevelopment ? handleSend : () => {}}
-            status={status}
-            stop={stop}
-            toggleRecording={toggleRecording}
-            handleMuteToggle={handleMuteToggle}
-          />
+          {/* Error Display
+          {isDevelopment && error && (
+            <div className="px-6 pb-2 text-red-500 text-sm">
+              <strong>Error:</strong> {error.message}
+            </div>
+          )} */}
+
+          {/* Chat Input Area */}
+          <div className="p-6 pt-2">
+            <ChatInput
+              input={input}
+              setInput={setInput}
+              onSend={isDevelopment ? handleSend : () => {}}
+              status={status}
+              stop={stop}
+              toggleRecording={toggleRecording}
+              handleMuteToggle={handleMuteToggle}
+            />
+          </div>
         </div>
       </div>
     </main>

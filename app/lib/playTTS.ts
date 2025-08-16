@@ -1,57 +1,45 @@
 // lib/playTTS.ts
-let lastAudio: HTMLAudioElement | null = null;
+"use client";
 
-export async function playTTS(text: string) {
-  try {
-    if (lastAudio) {
-      lastAudio.pause();
-      lastAudio.src = "";
-      lastAudio = null;
-    }
+export interface TTSPlayback {
+  audio: HTMLAudioElement;
+}
 
-    console.log("[playTTS] Starting fetch for text:", text);
+export function playTTS(
+  text: string,
+  ttsVoiceId: string
+): Promise<TTSPlayback> {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, voiceId: ttsVoiceId }),
+      });
 
-    const response = await fetch("/api/tts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }),
-    });
+      if (!response.ok || !response.body) {
+        throw new Error(`TTS API failed with status ${response.status}`);
+      }
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("TTS API error:", errorText);
-      return;
-    }
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
 
-    const audioBlob = await response.blob();
-    console.log("[playTTS] Received audio blob of size:", audioBlob.size);
-
-    if (audioBlob.size < 1000) {
-      console.error("Warning: audio blob size suspiciously small.");
-      return;
-    }
-
-    const audioUrl = URL.createObjectURL(audioBlob);
-    const audio = new Audio(audioUrl);
-    lastAudio = audio;
-
-    await new Promise<void>((resolve, reject) => {
-      audio.onended = () => {
-        console.log("[playTTS] Audio playback ended");
-        resolve();
-      };
-      audio.onerror = (e) => {
-        console.error("[playTTS] Audio error", e);
-        reject(e);
-      };
+      // --- THE DEFINITIVE FIX ---
+      // We resolve the promise ONLY when the audio is ready to be played.
+      // We do NOT call .play() here.
       audio.onloadeddata = () => {
-        console.log("[playTTS] Audio data loaded, starting playback");
-        audio.play().catch(reject);
+        resolve({ audio });
       };
-    });
 
-    URL.revokeObjectURL(audioUrl);
-  } catch (e) {
-    console.error("[playTTS] Exception:", e);
-  }
+      audio.onerror = (err) => {
+        URL.revokeObjectURL(audioUrl);
+        console.error("Audio playback error:", err);
+        reject(err);
+      };
+    } catch (error) {
+      console.error("Error in playTTS function:", error);
+      reject(error);
+    }
+  });
 }

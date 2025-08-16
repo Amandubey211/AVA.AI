@@ -34,19 +34,20 @@ export default function Navbar() {
       </Link>
       <div className="hidden md:flex gap-8 items-center">
         <Link
-          href="#"
+          href="/"
           className="hover:text-purple-400 text-purple-200 transition-colors"
         >
           AI Assistants
         </Link>
         <Link
-          href="#"
+          href="https://amandubey.vercel.app/about"
+          target="_blank"
           className="hover:text-purple-400 text-purple-200 transition-colors"
         >
-          Studio
+          Creator
         </Link>
         <Link
-          href="#"
+          href="/Pricing"
           className="hover:text-purple-400 text-purple-200 transition-colors"
         >
           Plans & Pricing

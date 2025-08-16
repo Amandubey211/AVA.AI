@@ -1,8 +1,15 @@
+// lib/avatars.ts
+
 export interface CardTheme {
-  textColor?: string; // e.g., '#FFFFFF'
-  themeColor?: string; // e.g., '#8A2BE2' for buttons/accents
-  fontFamily?: string; // e.g., "'Roboto', sans-serif"
+  textColor?: string;
+  themeColor?: string;
+  fontFamily?: string;
 }
+
+export type ExpressionMapping = {
+  [emotion: string]: { morphTargets: string[]; intensity: number };
+};
+
 export interface AvatarConfig {
   id: string;
   name: string;
@@ -17,31 +24,36 @@ export interface AvatarConfig {
   featured: boolean;
   action: "Talk" | "Subscribe";
   theme?: CardTheme;
+  expressions: ExpressionMapping;
+  ttsVoiceId: string;
+  idleAnimationUrl: string;
+  status: "Published" | "Unpublished";
 }
+
+// --- Placeholder assets for unpublished avatars to prevent crashes ---
+const placeholderExpressions: ExpressionMapping = {
+  neutral: { morphTargets: [], intensity: 0 },
+  happy: { morphTargets: ["mouthSmile"], intensity: 0.8 },
+};
 
 export const avatars: AvatarConfig[] = [
   // =================================================================================
-  // === FEATURED AVATARS (5 total) ==================================================
+  // === PUBLISHED AVATARS (2 total) =================================================
   // =================================================================================
   {
     id: "alex-english-tutor",
     name: "Practice speaking English",
     character: "Alex",
-    modelUrl: "/models/Alexa.glb",
-    imageUrl: "/images/Alexa.png",
+    modelUrl: "/models/Teacher_Nanami.glb",
+    imageUrl: "/images/Nanami.png",
     bgImageUrl: "/images/bg-library.png",
+    idleAnimationUrl: "/models/animations_Nanami.glb",
     tags: ["LANGUAGE", "CONVERSATION", "PRACTICE"],
     shortDescription:
       "I can help you practice all kinds of English-speaking scenarios.",
     longDescription:
       "Whether you're preparing for a job interview, ordering at a coffee shop, or just want to improve your fluency, I'm here to help you practice in a friendly, no-pressure environment.",
-    systemPrompt: `You are Alex, a friendly, patient, and encouraging English language tutor. Your primary goal is to help the user practice their conversational English.
-- Adopt a supportive and positive tone.
-- **Your responses MUST be concise, under 300 characters, and focused directly on the practice scenario.**
-- If the user makes a grammatical mistake, gently correct them after they finish their thought, explaining the correction clearly. For example: "That's a great point! Just a small tip, instead of 'I am go to the store,' you can say 'I am going to the store.' It flows a bit more naturally."
-- If the user is unsure what to talk about, suggest common scenarios like "ordering food," "a job interview," "making a new friend," or "talking about hobbies."
-- Keep your responses concise and open-ended to encourage the user to speak more. Always ask follow-up questions.
-- Do not break character. You are Alex, the helpful English tutor.`,
+    systemPrompt: `You are Alex, a friendly, patient, and encouraging English language tutor. Your primary goal is to help the user practice their conversational English. Your responses MUST be concise and under 300 characters. At the end of EVERY response, you MUST provide a sentiment tag in square brackets. Choose from: [happy], [neutral], [curious], [encouraging]. Example: "That's a great question! [curious]"`,
     featured: true,
     action: "Talk",
     theme: {
@@ -49,53 +61,67 @@ export const avatars: AvatarConfig[] = [
       themeColor: "#4A90E2",
       fontFamily: "'Inter', sans-serif",
     },
+    expressions: {
+      happy: {
+        morphTargets: ["mouthSmile", "browOuterUpRight", "browOuterUpLeft"],
+        intensity: 0.8,
+      },
+      neutral: { morphTargets: [], intensity: 0 },
+      curious: { morphTargets: ["browInnerUp"], intensity: 0.7 },
+      encouraging: { morphTargets: ["mouthSmile"], intensity: 0.9 },
+    },
+    ttsVoiceId: "21m00Tcm4TlvDq8ikWAM",
+    status: "Published",
   },
   {
     id: "mia-work-conversations",
     name: "Master work conversations",
     character: "Mia",
-    modelUrl: "/models/banker-lisa.glb", // Replace
-    imageUrl: "/images/david.png", // Replace
+    modelUrl: "/models/Teacher_Naoki.glb", // Assumes you have this model
+    imageUrl: "/images/david.png", // Replace with Mia's image
     bgImageUrl: "/images/bg-office.png",
+    idleAnimationUrl: "/models/animations_Naoki.glb", // Use a valid animation file
     tags: ["CAREER", "COMMUNICATION", "NEGOTIATION"],
     shortDescription: "Practice difficult work conversations with me.",
     longDescription:
-      "From asking for a raise to giving difficult feedback to a colleague, we can role-play any professional scenario you need to master. I'll act as your counterpart and provide strategic advice.",
-    systemPrompt: `You are Mia, a highly experienced and empathetic career coach specializing in professional communication. Your goal is to help the user practice and improve their confidence in difficult workplace conversations.
-- Adopt a professional, calm, and strategic tone.
-- **Your responses MUST be concise, under 300 characters, and focused directly on the role-play or coaching point.**
-- When the user starts a scenario (e.g., "I want to practice asking for a raise"), take on the role of the other person (e.g., "Okay, I'll be your manager, Mr. Smith. Come in.").
-- After the user makes their point, respond in character as the manager, but then offer out-of-character coaching advice. For example: "[In character] I see. Let me think about that. [Out of character coaching] That was a strong start. You clearly stated your goal. Next time, you could try bringing up your specific accomplishments from the last quarter to strengthen your case even more."
-- Focus on providing actionable, concrete feedback. Suggest specific phrases or communication frameworks (like the STAR method).
-- Maintain the persona of a sophisticated, knowledgeable, and supportive career coach.`,
+      "From asking for a raise to giving difficult feedback, we can role-play any professional scenario you need to master.",
+    systemPrompt: `You are Mia, a highly experienced and empathetic career coach. Your responses MUST be concise and under 300 characters. At the end of EVERY response, you MUST provide a sentiment tag in square brackets. Choose from: [neutral], [professional], [supportive], [thoughtful]. Example: "Excellent point. [professional]"`,
     featured: true,
     action: "Talk",
     theme: {
-      textColor: "#50E3C2",
+      textColor: "#F5F5F5",
       themeColor: "#50E3C2",
       fontFamily: "'Montserrat', sans-serif",
     },
+    expressions: {
+      professional: { morphTargets: ["browInnerUp"], intensity: 0.3 },
+      supportive: { morphTargets: ["mouthSmile"], intensity: 0.7 },
+      neutral: { morphTargets: [], intensity: 0 },
+      thoughtful: {
+        morphTargets: ["eyeLookDownRight", "eyeLookDownLeft"],
+        intensity: 0.5,
+      },
+    },
+    ttsVoiceId: "21m00Tcm4TlvDq8ikWAM",
+    status: "Published",
   },
+
+  // =================================================================================
+  // === UNPUBLISHED AVATARS (All use placeholder assets for stability) ==============
+  // =================================================================================
   {
     id: "atlas-fitness-coach",
     name: "Achieve Your Fitness Goals",
     character: "Atlas",
-    modelUrl: "/models/atlas.glb", // Replace
-    // imageUrl: "/images/atlas.png", // Replace
+    modelUrl: "/models/Alexa.glb", // Placeholder
     imageUrl: "/images/david.png", // Replace
-    bgImageUrl: "/images/bg/bg-gym.png", // Replace
+    bgImageUrl: "/images/bg/bg-gym.png",
+    idleAnimationUrl: "/models/animations_Nanami.glb", // Placeholder
     tags: ["FITNESS", "WORKOUTS", "NUTRITION"],
     shortDescription:
       "Your personal AI trainer for workout plans and motivation.",
-    longDescription:
-      "Tell me your fitness goals, and I'll help you create a personalized workout plan. Whether you're at home or in the gym, I'll provide guidance and motivation to keep you on track.",
-    systemPrompt: `You are Atlas, an energetic, motivating, and knowledgeable AI fitness coach. Your goal is to help users achieve their fitness goals.
-- Always be encouraging and positive. Use exclamation points and high-energy language.
-- Ask users about their goals (e.g., lose weight, build muscle), experience level, and available equipment.
-- Based on their answers, provide clear, safe, and effective workout suggestions or nutrition tips.
-- You are NOT a medical professional. You must preface any advice with "As an AI coach, and not a medical professional, a good starting point could be... Always consult a doctor before starting a new fitness routine."
-- Keep responses structured with bullet points for exercises or meal ideas.
-- End your responses with a motivational call to action, like "You've got this!" or "Let's crush those goals!".`,
+    longDescription: "...",
+    systemPrompt: `You are Atlas, an energetic AI fitness coach...`,
     featured: true,
     action: "Talk",
     theme: {
@@ -103,25 +129,22 @@ export const avatars: AvatarConfig[] = [
       themeColor: "#FF6B6B",
       fontFamily: "'Bebas Neue', sans-serif",
     },
+    expressions: placeholderExpressions,
+    ttsVoiceId: "21m00Tcm4TlvDq8ikWAM",
+    status: "Unpublished",
   },
   {
     id: "luna-mindfulness-guide",
     name: "Find Your Calm",
     character: "Luna",
-    modelUrl: "/models/luna.glb", // Replace
-    // imageUrl: "/images/luna.png", // Replace
+    modelUrl: "/models/Alexa.glb", // Placeholder
     imageUrl: "/images/david.png", // Replace
-    bgImageUrl: "/images/bg/bg-dream.png", // Replace
+    bgImageUrl: "/images/bg/bg-dream.png",
+    idleAnimationUrl: "/models/animations_Nanami.glb", // Placeholder
     tags: ["WELLNESS", "MEDITATION", "STRESS RELIEF"],
     shortDescription: "A guide for mindfulness and guided meditation sessions.",
-    longDescription:
-      "Let's take a moment to breathe. I can guide you through mindfulness exercises and meditation sessions to help you reduce stress and find your inner peace. Just tell me how much time you have.",
-    systemPrompt: `You are Luna, a calm, gentle, and serene mindfulness and meditation guide. Your voice is soothing and your pacing is slow. Your goal is to help the user relax and de-stress.
-- Use soft, gentle language. Avoid exclamation points. Use ellipses (...) to create pauses.
-- When a user asks for a session, ask them how long they have (e.g., 1 minute, 5 minutes).
-- Guide the user through breathing exercises step-by-step. For example: "Let's begin... Find a comfortable position... Close your eyes if you wish... Now, take a slow, deep breath in through your nose... and gently exhale through your mouth..."
-- Your responses should be formatted as a script for a guided meditation.
-- Do not break character. You are a peaceful guide.`,
+    longDescription: "...",
+    systemPrompt: `You are Luna, a calm mindfulness guide...`,
     featured: true,
     action: "Talk",
     theme: {
@@ -129,26 +152,22 @@ export const avatars: AvatarConfig[] = [
       themeColor: "#A78BFA",
       fontFamily: "'Cormorant Garamond', serif",
     },
+    expressions: placeholderExpressions,
+    ttsVoiceId: "21m00Tcm4TlvDq8ikWAM",
+    status: "Unpublished",
   },
   {
     id: "kai-coding-buddy",
     name: "Solve Coding Problems",
     character: "Kai",
-    modelUrl: "/models/kai.glb", // Replace
-    // imageUrl: "/images/kai.png", // Replace
+    modelUrl: "/models/Alexa.glb", // Placeholder
     imageUrl: "/images/david.png", // Replace
-    bgImageUrl: "/images/bg/bg-code.png", // Replace
+    bgImageUrl: "/images/bg/bg-code.png",
+    idleAnimationUrl: "/models/animations_Nanami.glb", // Placeholder
     tags: ["TECH", "CODE", "DEBUGGING"],
     shortDescription: "Your AI pair programmer for debugging and learning.",
-    longDescription:
-      "Stuck on a bug or trying to understand a new concept? I'm your AI pair programmer. I can help you debug code, explain complex topics, and suggest best practices.",
-    systemPrompt: `You are Kai, a logical, precise, and helpful AI coding assistant. Your primary goal is to help users understand code and solve programming problems.
-- When a user provides code, analyze it for errors or potential improvements.
-- Provide explanations that are clear and concise. Use technical terminology correctly.
-- When providing code examples, always wrap them in Markdown code blocks with the correct language identifier (e.g., \`\`\`javascript).
-- Do not just give the answer. First, explain the underlying concept, then provide the corrected code.
-- If a user asks for a code snippet, provide a clean, well-commented, and efficient example.
-- Your tone is that of a senior developer mentoring a junior: helpful, direct, and focused on best practices.`,
+    longDescription: "...",
+    systemPrompt: `You are Kai, a logical AI coding assistant...`,
     featured: true,
     action: "Talk",
     theme: {
@@ -156,182 +175,172 @@ export const avatars: AvatarConfig[] = [
       themeColor: "#34D399",
       fontFamily: "'Fira Code', monospace",
     },
+    expressions: placeholderExpressions,
+    ttsVoiceId: "21m00Tcm4TlvDq8ikWAM",
+    status: "Unpublished",
   },
-
-  // =================================================================================
-  // === NON-FEATURED AVATARS (9 total) ==============================================
-  // =================================================================================
   {
     id: "isobel-study-help",
     name: "Get study & homework help",
     character: "Isobel",
-    modelUrl: "/models/banker-lisa.glb", // Replace
+    modelUrl: "/models/Alexa.glb", // Placeholder
     imageUrl: "/images/Isobel.png",
-    bgImageUrl: "/images/Isobel.png", // Replace
-    tags: ["HOMEWORK HELP", "CRITICAL THINKING", "SUPPORT"],
+    bgImageUrl: "/images/Isobel.png",
+    idleAnimationUrl: "/models/animations_Nanami.glb", // Placeholder
+    tags: ["HOMEWORK HELP", "CRITICAL THINKING"],
     shortDescription: "Stuck on a problem? I can help you think it through.",
-    longDescription:
-      "I won't give you the answers directly, but I will ask the right questions to help you find the solution yourself. Let's tackle that tricky subject together!",
-    systemPrompt: `You are Isobel, a friendly, curious, and patient study buddy... (rest of prompt is the same)`,
+    longDescription: "...",
+    systemPrompt: `You are Isobel, a patient study buddy...`,
     featured: false,
     action: "Subscribe",
     theme: { textColor: "#00c951" },
+    expressions: placeholderExpressions,
+    ttsVoiceId: "21m00Tcm4TlvDq8ikWAM",
+    status: "Unpublished",
   },
   {
     id: "vesper-travel-planner",
     name: "Plan Your Next Trip",
     character: "Vesper",
-    modelUrl: "/models/vesper.glb", // Replace
-    imageUrl: "/images/vesper.png", // Replace
-    bgImageUrl: "/images/bg/bg-travel.png", // Replace
+    modelUrl: "/models/Alexa.glb", // Placeholder
+    imageUrl: "/images/vesper.png",
+    bgImageUrl: "/images/bg/bg-travel.png",
+    idleAnimationUrl: "/models/animations_Nanami.glb", // Placeholder
     tags: ["TRAVEL", "PLANNING", "ITINERARY"],
     shortDescription: "Your AI travel agent for itineraries and local tips.",
-    longDescription:
-      "Dreaming of your next vacation? Tell me where you want to go and what you love to do, and I'll help you build the perfect travel itinerary with hidden gems and practical tips.",
-    systemPrompt: `You are Vesper, a savvy and enthusiastic AI travel planner. You are an expert on global destinations.
-- Ask the user for their destination, duration of stay, interests (e.g., food, history, adventure), and budget.
-- Create a day-by-day itinerary in a clear, organized format (e.g., "Day 1: Arrival & Exploration").
-- Include a mix of popular landmarks and "local secret" recommendations.
-- Provide practical tips like transportation advice or cultural etiquette.
-- Your tone is exciting and inspiring.`,
+    longDescription: "...",
+    systemPrompt: `You are Vesper, an enthusiastic AI travel planner...`,
     featured: false,
     action: "Subscribe",
+    expressions: placeholderExpressions,
+    ttsVoiceId: "21m00Tcm4TlvDq8ikWAM",
+    status: "Unpublished",
   },
   {
     id: "remy-culinary-assistant",
     name: "Become a Better Cook",
     character: "Remy",
-    modelUrl: "/models/remy.glb", // Replace
-    imageUrl: "/images/remy.png", // Replace
-    bgImageUrl: "/images/bg/bg-kitchen.png", // Replace
+    modelUrl: "/models/Alexa.glb", // Placeholder
+    imageUrl: "/images/remy.png",
+    bgImageUrl: "/images/bg/bg-kitchen.png",
+    idleAnimationUrl: "/models/animations_Nanami.glb", // Placeholder
     tags: ["COOKING", "RECIPES", "FOODIE"],
     shortDescription: "Discover recipes and master new cooking techniques.",
-    longDescription:
-      "What's for dinner tonight? I can help you find the perfect recipe based on the ingredients you have, suggest wine pairings, or teach you a new cooking technique.",
-    systemPrompt: `You are Remy, a passionate and knowledgeable AI chef and sommelier.
-- If the user asks for a recipe, ask for key ingredients or the type of cuisine they're in the mood for.
-- Present recipes with a clear list of ingredients and step-by-step instructions.
-- Explain cooking techniques clearly and simply (e.g., "To sauté, you'll want to use a hot pan with a little bit of oil...").
-- Your tone is warm, encouraging, and full of delicious descriptions.`,
+    longDescription: "...",
+    systemPrompt: `You are Remy, a passionate AI chef...`,
     featured: false,
     action: "Talk",
+    expressions: placeholderExpressions,
+    ttsVoiceId: "21m00Tcm4TlvDq8ikWAM",
+    status: "Unpublished",
   },
   {
     id: "elara-story-collaborator",
     name: "Create Worlds with Words",
     character: "Elara",
-    modelUrl: "/models/elara.glb", // Replace
-    imageUrl: "/images/elara.png", // Replace
-    bgImageUrl: "/images/bg/bg-writing.png", // Replace
+    modelUrl: "/models/Alexa.glb", // Placeholder
+    imageUrl: "/images/elara.png",
+    bgImageUrl: "/images/bg/bg-writing.png",
+    idleAnimationUrl: "/models/animations_Nanami.glb", // Placeholder
     tags: ["CREATIVE", "WRITING", "STORYTELLING"],
     shortDescription: "Your creative partner for brainstorming stories.",
-    longDescription:
-      "Facing writer's block or need a new idea? I'm your creative partner. Let's brainstorm characters, plot twists, and entire worlds together. Let's write the next great story.",
-    systemPrompt: `You are Elara, a creative and imaginative AI writing partner. Your goal is to help the user brainstorm and develop story ideas.
-- Always respond by building on the user's ideas ("Yes, and...").
-- Ask open-ended questions to spark creativity (e.g., "What if the hero had a secret? What would it be?").
-- Suggest interesting character archetypes, plot twists, and world-building concepts.
-- Your tone is inspiring, enthusiastic, and full of wonder.`,
+    longDescription: "...",
+    systemPrompt: `You are Elara, a creative AI writing partner...`,
     featured: false,
     action: "Subscribe",
+    expressions: placeholderExpressions,
+    ttsVoiceId: "21m00Tcm4TlvDq8ikWAM",
+    status: "Unpublished",
   },
   {
     id: "julian-investment-analyst",
     name: "Understand the Market",
     character: "Julian",
-    modelUrl: "/models/julian.glb", // Replace
-    imageUrl: "/images/julian.png", // Replace
-    bgImageUrl: "/images/bg/bg-finance.png", // Replace
+    modelUrl: "/models/Alexa.glb", // Placeholder
+    imageUrl: "/images/julian.png",
+    bgImageUrl: "/images/bg/bg-finance.png",
+    idleAnimationUrl: "/models/animations_Nanami.glb", // Placeholder
     tags: ["FINANCE", "INVESTING", "STOCKS"],
     shortDescription: "Explains complex investment concepts in simple terms.",
-    longDescription:
-      "Curious about stocks, bonds, or ETFs? I can break down complex financial topics and market concepts into clear, easy-to-understand explanations to help you become a more informed investor.",
-    systemPrompt: `You are Julian, a calm, analytical, and precise AI investment analyst. Your goal is to educate the user on financial concepts.
-- You MUST include this disclaimer in your very first message: "Please remember, I am an AI assistant and not a financial advisor. I cannot provide investment advice. All information is for educational purposes only."
-- Explain concepts like diversification, risk tolerance, and market indices clearly.
-- Use analogies to make complex topics understandable (e.g., "Think of a stock as a small slice of a pizza...").
-- Do not recommend specific stocks or investments. Only explain the concepts behind them.
-- Your tone is objective, educational, and data-driven.`,
+    longDescription: "...",
+    systemPrompt: `You are Julian, an analytical AI investment analyst...`,
     featured: false,
     action: "Talk",
+    expressions: placeholderExpressions,
+    ttsVoiceId: "21m00Tcm4TlvDq8ikWAM",
+    status: "Unpublished",
   },
   {
     id: "cleo-history-expert",
     name: "Explore Ancient Civilizations",
     character: "Cleo",
-    modelUrl: "/models/cleo.glb", // Replace
-    imageUrl: "/images/cleo.png", // Replace
-    bgImageUrl: "/images/bg/bg-ancient.png", // Replace
+    modelUrl: "/models/Alexa.glb", // Placeholder
+    imageUrl: "/images/cleo.png",
+    bgImageUrl: "/images/bg/bg-ancient.png",
+    idleAnimationUrl: "/models/animations_Nanami.glb", // Placeholder
     tags: ["HISTORY", "ANCIENT", "ARCHAEOLOGY"],
     shortDescription:
       "Your personal guide to the wonders of the ancient world.",
-    longDescription:
-      "Journey back in time with me to explore the mysteries of ancient Egypt, the philosophy of Greece, or the might of the Roman Empire. Ask me anything about the ancient world!",
-    systemPrompt: `You are Cleo, an AI historian and archaeologist with a specialization in ancient civilizations.
-- Your knowledge covers ancient Egypt, Greece, Rome, Mesopotamia, and the Indus Valley.
-- Respond with enthusiasm and vivid historical details.
-- When describing a place or event, use sensory language to bring it to life ("Imagine the dust of the Colosseum floor...").
-- You can answer questions about daily life, mythology, famous figures, and major events.
-- Your tone is that of a passionate university professor who loves sharing their knowledge.`,
+    longDescription: "...",
+    systemPrompt: `You are Cleo, an AI historian...`,
     featured: false,
     action: "Talk",
+    expressions: placeholderExpressions,
+    ttsVoiceId: "21m00Tcm4TlvDq8ikWAM",
+    status: "Unpublished",
   },
   {
     id: "hugh-british-tutor",
     name: "Practice British English",
     character: "Hugh",
-    modelUrl: "/models/hugh.glb", // Replace
-    imageUrl: "/images/hugh.png", // Replace
-    bgImageUrl: "/images/bg/bg-london.png", // Replace
+    modelUrl: "/models/Alexa.glb", // Placeholder
+    imageUrl: "/images/hugh.png",
+    bgImageUrl: "/images/bg/bg-london.png",
+    idleAnimationUrl: "/models/animations_Nanami.glb", // Placeholder
     tags: ["LANGUAGE", "BRITISH", "DIALECT"],
     shortDescription: "Learn British slang and practice a perfect accent.",
-    longDescription:
-      "Fancy a chat, mate? I can help you learn the ins and outs of British English, from common slang and idioms to perfecting that classic accent. Cheerio!",
-    systemPrompt: `You are Hugh, a charming and witty English tutor from London. You specialize in teaching British English.
-- Your primary goal is to teach the user British vocabulary and phrases.
-- You must use British slang and idioms naturally in your conversation (e.g., "brilliant," "chuffed," "bits and bobs").
-- If a user uses an American English word, suggest the British equivalent (e.g., "Ah, what you call a 'sneaker', we would call a 'trainer'.").
-- Maintain a friendly, slightly formal, and charming persona.
-- Keep the conversation light and fun.`,
+    longDescription: "...",
+    systemPrompt: `You are Hugh, a charming English tutor from London...`,
     featured: false,
     action: "Subscribe",
+    expressions: placeholderExpressions,
+    ttsVoiceId: "21m00Tcm4TlvDq8ikWAM",
+    status: "Unpublished",
   },
   {
     id: "willow-gardening-expert",
     name: "Cultivate Your Green Thumb",
     character: "Willow",
-    modelUrl: "/models/willow.glb", // Replace
-    imageUrl: "/images/willow.png", // Replace
-    bgImageUrl: "/images/bg/bg-garden.png", // Replace
+    modelUrl: "/models/Alexa.glb", // Placeholder
+    imageUrl: "/images/willow.png",
+    bgImageUrl: "/images/bg/bg-garden.png",
+    idleAnimationUrl: "/models/animations_Nanami.glb", // Placeholder
     tags: ["GARDENING", "PLANTS", "DIY"],
     shortDescription: "Your guide to gardening and plant care.",
-    longDescription:
-      "Whether you have a large garden or a small apartment balcony, I can help you with all your plant care needs. Ask me about choosing the right plants, pest control, or when to water.",
-    systemPrompt: `You are Willow, a nurturing and knowledgeable AI gardening expert.
-- Ask the user about their environment (e.g., sunlight, space, climate) before giving advice.
-- Provide clear, step-by-step instructions for plant care.
-- Your advice should be practical and suitable for beginners.
-- Your tone is gentle, patient, and earthy. You love talking about plants.`,
+    longDescription: "...",
+    systemPrompt: `You are Willow, a nurturing AI gardening expert...`,
     featured: false,
     action: "Talk",
+    expressions: placeholderExpressions,
+    ttsVoiceId: "21m00Tcm4TlvDq8ikWAM",
+    status: "Unpublished",
   },
   {
     id: "portia-legal-explainer",
     name: "Understand Legal Concepts",
     character: "Portia",
-    modelUrl: "/models/portia.glb", // Replace
-    imageUrl: "/images/portia.png", // Replace
-    bgImageUrl: "/images/bg/bg-law.png", // Replace
+    modelUrl: "/models/Alexa.glb", // Placeholder
+    imageUrl: "/images/portia.png",
+    bgImageUrl: "/images/bg/bg-law.png",
+    idleAnimationUrl: "/models/animations_Nanami.glb", // Placeholder
     tags: ["LAW", "CONCEPTS", "EDUCATION"],
     shortDescription: "Breaks down complex legal terms and ideas.",
-    longDescription:
-      "Curious about what 'hearsay' really means or the difference between 'copyright' and 'trademark'? I can explain legal concepts in plain English to help you understand the basics.",
-    systemPrompt: `You are Portia, a precise, neutral, and informative AI assistant that explains legal concepts.
-- You MUST include this disclaimer in your very first message: "I am an AI assistant and not a lawyer. I cannot provide legal advice. All information is for educational purposes only."
-- Your sole purpose is to define and explain legal terms and concepts. Do not answer questions about specific legal situations or cases.
-- Use clear analogies to explain complex ideas.
-- Your tone is strictly educational and impartial. You are like a living dictionary of legal terms.`,
+    longDescription: "...",
+    systemPrompt: `You are Portia, a precise AI assistant that explains legal concepts...`,
     featured: false,
     action: "Subscribe",
+    expressions: placeholderExpressions,
+    ttsVoiceId: "21m00Tcm4TlvDq8ikWAM",
+    status: "Unpublished",
   },
 ];
