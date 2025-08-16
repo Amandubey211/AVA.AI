@@ -29,6 +29,10 @@ interface AvatarState {
   // --- NEW: Add blink state to the global store ---
   blink: boolean;
   triggerBlink: () => void;
+  isModalOpen: boolean;
+  modalVideoUrl: string;
+  openModal: (url: string) => void;
+  closeModal: () => void;
 }
 
 export const useAvatarStore = create<AvatarState>((set, get) => ({
@@ -47,6 +51,10 @@ export const useAvatarStore = create<AvatarState>((set, get) => ({
   currentEmotion: null,
   isPlaying: false,
   blink: false,
+  isModalOpen: false,
+  modalVideoUrl: "",
+  openModal: (url) => set({ isModalOpen: true, modalVideoUrl: url }),
+  closeModal: () => set({ isModalOpen: false, modalVideoUrl: "" }),
 
   // --- NEW: Blink Action ---
   // This action will be called by a global timer

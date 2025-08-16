@@ -8,6 +8,7 @@ import Navbar from "./components/Navbar";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "react-hot-toast";
+import VideoModal from "./components/VideoModal"; // Import the new global modal
 
 export default function RootLayout({
   children,
@@ -23,18 +24,18 @@ export default function RootLayout({
         <Toaster
           position="top-center"
           reverseOrder={false}
-          toastOptions={{
-            style: {
-              background: "#333",
-              color: "#fff",
-            },
-          }}
+          toastOptions={{ style: { background: "#333", color: "#fff" } }}
         />
+
         <LenisProvider>
           {!isChatPage && <Navbar />}
           <main>{children}</main>
           {!isChatPage && <Footer />}
         </LenisProvider>
+
+        {/* --- Render the global VideoModal here --- */}
+        <VideoModal />
+
         <Analytics />
       </body>
     </html>
