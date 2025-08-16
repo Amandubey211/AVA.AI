@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AvatarConfig, avatars } from "@/app/lib/avatars";
 import ChatExperience from "@/app/components/ChatExperience";
+import Loader from "@/app/components/Loader";
 
 export default function ChatPage() {
   const router = useRouter();
@@ -24,12 +25,9 @@ export default function ChatPage() {
     }
   }, [params, router]);
 
+  // --- Show the polished Loader while the avatar config is being loaded ---
   if (!avatar) {
-    return (
-      <div className="w-screen h-screen bg-black flex items-center justify-center text-white">
-        Loading Assistant...
-      </div>
-    );
+    return <Loader text="Loading Assistant..." />;
   }
 
   return <ChatExperience key={avatar.id} avatar={avatar} />;

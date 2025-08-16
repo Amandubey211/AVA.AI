@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAvatarStore } from "../store/avatarStore";
 
 export default function VideoModal() {
-  // --- Get state and actions from the global store ---
   const { isModalOpen, modalVideoUrl, closeModal } = useAvatarStore();
   const modalContentRef = useRef<HTMLDivElement>(null);
 
@@ -52,7 +51,7 @@ export default function VideoModal() {
 
     if (isModalOpen) {
       window.addEventListener("keydown", handleKeyDown);
-      setTimeout(() => modalContentRef.current?.focus(), 100); // Focus after animation
+      setTimeout(() => modalContentRef.current?.focus(), 100);
     } else {
       window.removeEventListener("keydown", handleKeyDown);
     }
@@ -65,7 +64,9 @@ export default function VideoModal() {
     <AnimatePresence>
       {isModalOpen && (
         <motion.div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 md:p-8  bg-black/90 modal-backdrop-blur"
+          // --- RESPONSIVE FIX: Add responsive padding to the backdrop ---
+          // This creates the margin around the modal.
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-12 md:p-8 bg-black/90 modal-backdrop-blur"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -76,7 +77,8 @@ export default function VideoModal() {
             tabIndex={-1}
             role="dialog"
             aria-modal="true"
-            className="relative w-full max-w-4xl bg-gray-900/80 rounded-2xl overflow-hidden border border-white/10 shadow-2xl"
+            // --- RESPONSIVE FIX: Adjust max-width for better aesthetics on large screens ---
+            className="relative w-full max-w-3xl bg-gray-900/80 rounded-2xl overflow-hidden border border-white/10 shadow-2xl"
             initial={{ scale: 0.9, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.9, y: 20 }}
@@ -85,7 +87,7 @@ export default function VideoModal() {
           >
             <div className="relative pt-[56.25%]">
               <iframe
-                src={modalVideoUrl} // Use the URL from the store
+                src={modalVideoUrl}
                 className="absolute top-0 left-0 w-full h-full"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
