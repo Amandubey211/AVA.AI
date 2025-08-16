@@ -1,27 +1,23 @@
 // app/page.tsx
-
-import AvatarGrid from "./components/AvatarGrid";
-import FeaturedCarousel from "./components/FeaturedCarousel";
-import Hero from "./components/Hero";
-import { avatars } from "./lib/avatars";
 import { Metadata } from "next";
+import { avatars } from "./lib/avatars";
+import ClientLandingPage from "./components/ClientLandingPage";
 
 // --- METADATA FOR SEO & SOCIAL SHARING ---
+// This now works correctly because this is a Server Component.
 export const metadata: Metadata = {
   title: "AI Avatar Platform | Your Personal AI Companion",
   description:
     "Engage with intelligent 3D AI assistants. Practice conversations, explore ideas, and achieve your goals with a judgment-free companion.",
-
-  // Open Graph (for Facebook, LinkedIn, etc.)
   openGraph: {
     title: "AI Avatar Platform | Your Personal AI Companion",
     description:
       "Experience the future of interaction with lifelike AI avatars.",
-    url: "https://ava-ai-five.vercel.app/", // IMPORTANT: Replace with your actual deployed URL
+    url: "https://ava-ai-five.vercel.app/",
     siteName: "AI Avatar Platform",
     images: [
       {
-        url: "/og/landing.png", // Path to your OG image in the /public folder
+        url: "/og/landing.png",
         width: 1200,
         height: 630,
         alt: "AI Avatar Platform Hero Image",
@@ -30,52 +26,27 @@ export const metadata: Metadata = {
     locale: "en_US",
     type: "website",
   },
-
-  // Twitter Card
   twitter: {
     card: "summary_large_image",
     title: "AI Avatar Platform | Your Personal AI Companion",
     description:
       "Engage with intelligent 3D AI assistants. Practice conversations, explore ideas, and achieve your goals.",
-    // creator: '@yourTwitterHandle', // Optional: add your Twitter handle
-    images: ["/og/landing.png"], // Must be the same as og:image
+    images: ["/og/landing.png"],
   },
-
-  // Robots and Canonical URL
   robots: {
     index: true,
     follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
   },
-  // We can add the canonical URL once deployed
   alternates: {
-    canonical: "https://ava-ai-five.vercel.app/",
+    canonical: "https://ava-ai-five.vercel.app/", // IMPORTANT: Update with your live URL
   },
 };
 
 export default function LandingPage() {
-  const featuredAvatars = avatars.filter((a) => a.featured);
-  const gridAvatars = avatars.filter((a) => !a.featured);
+  // This is a Server Component. We can prepare data here.
+  // In the future, this is where you would fetch data from a database.
+  const allAvatars = avatars;
 
-  return (
-    <>
-      <main>
-        <Hero />
-        <FeaturedCarousel avatars={featuredAvatars} />
-
-        <section className="py-16 px-8">
-          <h2 className="text-3xl font-bold mb-8 text-center">
-            What do you need assistance with?
-          </h2>
-          <AvatarGrid avatars={gridAvatars} />
-        </section>
-      </main>
-    </>
-  );
+  // We render the Client Component and pass the data down as a prop.
+  return <ClientLandingPage avatars={allAvatars} />;
 }

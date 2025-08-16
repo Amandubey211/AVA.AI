@@ -74,7 +74,7 @@ export default function Hero() {
 
   // The state for the modal (`isModalOpen`) is now REMOVED from this component.
 
-  const videoId = "40UcgTHhIWY";
+  const videoId = "bUw9OxeBJhI";
   const demoVideoUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&controls=0&mute=1&showinfo=0&rel=0`;
 
   // Effect for responsive font size

@@ -25,7 +25,6 @@ export default function ChatPage() {
     }
   }, [params, router]);
 
-  // --- Show the polished Loader while the avatar config is being loaded ---
   if (!avatar) {
     return <Loader text="Loading Assistant..." />;
   }

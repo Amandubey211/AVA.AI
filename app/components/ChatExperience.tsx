@@ -26,16 +26,23 @@ interface IWindow extends Window {
 
 export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
   const router = useRouter();
-  const { isRecording, setIsRecording, isMuted, setMuted, initialize } =
-    useAvatarStore();
+  const {
+    isRecording,
+    setIsRecording,
+    isMuted,
+    setMuted,
+    initialize,
+    openModal,
+  } = useAvatarStore();
+
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(
     null
   );
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-
   const finalTranscriptRef = useRef("");
   const isMuteAction = useRef(false);
+
   const [isDevelopment, setIsDevelopment] = useState(false);
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
 
@@ -49,7 +56,6 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
       ttsVoiceId: avatar.ttsVoiceId,
     });
 
-  // Welcome Message Logic
   useEffect(() => {
     if (messages.length === 0 && isDevelopment) {
       const welcomeMessage = `Hello! I'm ${avatar.character}. How can I help you today?`;
@@ -71,7 +77,6 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDevelopment]);
 
-  // Speech Recognition Setup
   useEffect(() => {
     const SpeechRecognitionAPI =
       (window as IWindow).SpeechRecognition ||
@@ -115,9 +120,11 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
   useEffect(() => {
     initialize();
   }, [initialize]);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
   useEffect(() => {
     if (input === "") {
       finalTranscriptRef.current = "";
@@ -136,18 +143,55 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
   };
 
   const toggleRecording = () => {
-    /* ... */
+    if (isRecording) {
+      if (input.trim()) {
+        handleSend(input);
+      }
+      isMuteAction.current = false;
+      recognition?.stop();
+    } else {
+      setInput("");
+      finalTranscriptRef.current = "";
+      setMuted(false);
+      recognition?.start();
+      setIsRecording(true);
+    }
   };
+
   const handleMuteToggle = () => {
-    /* ... */
+    const nextMutedState = !isMuted;
+    setMuted(nextMutedState);
+    if (isRecording) {
+      isMuteAction.current = true;
+      recognition?.stop();
+      if (!nextMutedState) {
+        recognition?.start();
+      }
+    }
   };
+
   const listVariants = {
     hidden: { opacity: 0 },
     show: { opacity: 1, transition: { staggerChildren: 0.15 } },
   };
-  const videoId = "40UcgTHhIWY";
+
+  const videoId = "bUw9OxeBJhI";
+  const demoVideoUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&controls=0&mute=1&showinfo=0&rel=0`;
+
   return (
     <main className="relative w-screen h-screen flex flex-col bg-gradient-to-br from-gray-900 to-gray-800 text-white overflow-hidden">
+      {/* --- THE FIX: The Back Button is now a direct child of the `main` container --- */}
+      <div className="absolute top-6 left-6 z-20">
+        <button
+          onClick={() => router.push("/")}
+          className="flex items-center gap-2 px-4 py-2 bg-black/50 text-white font-semibold rounded-full backdrop-blur-sm hover:bg-black/70 transition-colors"
+          aria-label="Back to Gallery"
+        >
+          <ArrowLeft size={20} />
+          <span>Back to Gallery</span>
+        </button>
+      </div>
+
       {isDevelopment && <DebugPanel avatar={avatar} />}
       <BuyMeACoffeeModal
         isOpen={isSupportModalOpen}
@@ -170,27 +214,22 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
           </div>
         </div>
         <div className="w-2/5 h-full flex flex-col bg-black/40 backdrop-blur-xl border-l-2 border-white/10">
+          {/* The old back button location is now removed from the header */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="p-4 flex items-center gap-4 border-b border-white/10"
+            className="p-6 flex items-center gap-4 border-b border-white/10" // Adjusted padding
           >
-            <button
-              onClick={() => router.push("/")}
-              className="p-2 rounded-full hover:bg-white/10 transition-colors"
-              aria-label="Back to Gallery"
-            >
-              <ArrowLeft size={20} />
-            </button>
             <div className="flex-grow">
-              <h2 className="text-xl font-bold tracking-tight">{`Chat with ${avatar.character}`}</h2>
+              <h2 className="text-2xl font-bold tracking-tight">{`Chat with ${avatar.character}`}</h2>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                 <p className="text-xs text-green-400">Online</p>
               </div>
             </div>
           </motion.div>
+
           <motion.div
             variants={listVariants}
             initial="hidden"
@@ -208,20 +247,17 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
                   Live Demo Coming Soon!
                 </h3>
                 <p className="max-w-xs mb-6">
-                  The live AI chat is currently offline to manage API costs
-                  during development. You can see the full experience in the
-                  demo video.
+                  The live AI chat is currently offline to manage API costs. You
+                  can see the full experience in the demo video.
                 </p>
                 <div className="flex flex-col gap-3 w-full max-w-xs">
-                  <a
-                    href={`https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&controls=0&mute=1&showinfo=0&rel=0`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    onClick={() => openModal(demoVideoUrl)}
                     className="flex items-center justify-center gap-2 w-full py-3 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-500 transition-colors"
                   >
                     <Video size={18} />
                     Watch Demo Video
-                  </a>
+                  </button>
                   <button
                     onClick={() => setIsSupportModalOpen(true)}
                     className="flex items-center justify-center gap-2 w-full py-3 bg-white/10 text-white font-bold rounded-lg hover:bg-white/20 transition-colors"

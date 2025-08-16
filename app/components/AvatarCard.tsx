@@ -34,7 +34,7 @@ const AvatarCard = React.memo(function AvatarCard({
       {/* Overlay for unpublished cards */}
       {!isPublished && (
         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-2 mt-14 px-4 py-2 bg-black/50 rounded-lg backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-2 mt-24 p-4 bg-black/50 rounded-lg backdrop-blur-sm">
             <Lock size={20} className="text-white" />
             <span className="text-white text-sm font-semibold">
               Coming Soon
@@ -90,7 +90,6 @@ const AvatarCard = React.memo(function AvatarCard({
           {CardContent}
         </Link>
       ) : (
-        // Otherwise, render a simple div that is not a link
         <div>{CardContent}</div>
       )}
     </motion.div>
