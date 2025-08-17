@@ -12,8 +12,8 @@ interface AvatarGridProps {
 export default function AvatarGrid({ avatars }: AvatarGridProps) {
   return (
     <motion.div
-      layout // This prop animates the grid layout changes
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto"
+      layout
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-7xl mx-auto"
     >
       <AnimatePresence>
         {avatars.map((avatar) => (

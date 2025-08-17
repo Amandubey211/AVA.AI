@@ -43,12 +43,13 @@ const AvatarCard = React.memo(function AvatarCard({
         </div>
       )}
 
-      {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
 
-      {/* Content */}
       <div className="relative z-10">
-        <h3 className="text-3xl font-bold text-white">{avatar.name}</h3>
+        {/* --- RESPONSIVE FIX: Smaller text on mobile --- */}
+        <h3 className="text-2xl sm:text-3xl font-bold text-white">
+          {avatar.name}
+        </h3>
         <p className="text-gray-300 mt-1">with {avatar.character}</p>
         <div className="flex flex-wrap gap-2 mt-4">
           {avatar.tags.map((tag) => (
@@ -62,9 +63,10 @@ const AvatarCard = React.memo(function AvatarCard({
         </div>
       </div>
 
-      {/* Buttons (only visible on published cards on hover) */}
+      {/* --- RESPONSIVE FIX: Buttons are always visible on touch devices --- */}
+      {/* On desktop (non-touch), they appear on hover. On mobile, they are always visible. */}
       {isPublished && (
-        <div className="relative z-10 flex items-center gap-3 mt-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div className="relative z-10 flex items-center gap-3 mt-6 opacity-100 group-hover:opacity-100 md:opacity-0 transition-opacity duration-300">
           <button
             title="mic"
             className="p-4 rounded-full bg-black flex items-center justify-center shadow-md hover:scale-105 transition"
@@ -81,7 +83,6 @@ const AvatarCard = React.memo(function AvatarCard({
 
   return (
     <motion.div variants={itemVariants}>
-      {/* Wrap with Link only if published */}
       {isPublished ? (
         <Link
           href={`/chat/${avatar.id}`}

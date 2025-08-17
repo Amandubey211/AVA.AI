@@ -45,10 +45,10 @@ export default function ClientLandingPage({ avatars }: ClientLandingPageProps) {
           <h2 className="text-3xl font-bold mb-8 text-center">
             What do you need assistance with?
           </h2>
-          <FilterControls
+          {/* <FilterControls
             selectedCategory={selectedCategory}
             setSelectedCategory={setSelectedCategory}
-          />
+          /> */}
         </motion.div>
 
         <AvatarGrid avatars={filteredGridAvatars} />
