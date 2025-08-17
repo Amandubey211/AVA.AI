@@ -26,6 +26,7 @@ const ANIMATION_MAP = {
   Idle: "Idle",
   Thinking: "Thinking",
   Talking: "Talking",
+  Talking2: "Talking2",
 };
 
 function Model({
@@ -45,20 +46,34 @@ function Model({
     useAvatarStore();
   const [animation, setAnimation] = useState("Idle");
   const [thinkingText, setThinkingText] = useState(".");
-
+  const lastTalkAnimation = useRef<string | null>(null);
   const mixer = useMemo(() => new AnimationMixer(scene), [scene]);
   const { actions } = useAnimations(animations, modelRef);
 
-  // Animation State Machine
   useEffect(() => {
-    if (chatStatus === "submitted") {
+    if (isAudioPlaying) {
+      // --- THE RANDOMIZATION FIX ---
+      // If we are about to start talking, pick a random talking animation
+      const talkingAnimations = [ANIMATION_MAP.Talking, ANIMATION_MAP.Talking2];
+      // Filter out the last one we played to make it less repetitive
+      const availableAnimations = talkingAnimations.filter(
+        (anim) => anim !== lastTalkAnimation.current
+      );
+      // Pick a random one from the available options
+      const nextAnimation =
+        availableAnimations[
+          Math.floor(Math.random() * availableAnimations.length)
+        ];
+
+      setAnimation(nextAnimation);
+      lastTalkAnimation.current = nextAnimation;
+    } else if (chatStatus === "submitted") {
       setAnimation(ANIMATION_MAP.Thinking);
-    } else if (isAudioPlaying) {
-      setAnimation(ANIMATION_MAP.Talking);
     } else {
       setAnimation(ANIMATION_MAP.Idle);
+      lastTalkAnimation.current = null; // Reset when idle
     }
-  }, [chatStatus, isAudioPlaying]);
+  }, [isAudioPlaying, chatStatus]);
 
   useEffect(() => {
     Object.values(actions).forEach((action) => action?.fadeOut(0.5));
@@ -143,12 +158,11 @@ function Model({
           </div>
         </Html>
       )}
-      <primitive object={scene} scale={1.8} position={[0, -1.7, 0]} />
+      <primitive object={scene} scale={2} position={[0, -1.6, 0]} />
     </group>
   );
 }
 
-// ... (Rest of AvatarCanvas component is unchanged)
 interface AvatarCanvasProps {
   modelUrl: string;
   expressions: ExpressionMapping;

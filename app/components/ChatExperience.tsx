@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+// import Image from "next/image";
 import { useAvatarStore } from "../store/avatarStore";
 import { AvatarConfig } from "../lib/avatars";
 import AvatarCanvas from "./AvatarCanvas";
