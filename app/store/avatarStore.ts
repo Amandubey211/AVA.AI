@@ -33,6 +33,8 @@ interface AvatarState {
   modalVideoUrl: string;
   openModal: (url: string) => void;
   closeModal: () => void;
+  currentVisemes: [number, number][];
+  currentAudio: HTMLAudioElement | null;
 }
 
 export const useAvatarStore = create<AvatarState>((set, get) => ({
@@ -50,6 +52,8 @@ export const useAvatarStore = create<AvatarState>((set, get) => ({
   audioQueue: [],
   currentEmotion: null,
   isPlaying: false,
+  currentVisemes: [],
+  currentAudio: null,
   blink: false,
   isModalOpen: false,
   modalVideoUrl: "",
@@ -81,10 +85,17 @@ export const useAvatarStore = create<AvatarState>((set, get) => ({
     set({ isPlaying: true, isSpeaking: true, isAudioPlaying: true });
     const nextAudio = audioQueue[0];
     try {
-      const { audio } = await playTTS(nextAudio.text, nextAudio.ttsVoiceId);
+      const { audio, visemes } = await playTTS(
+        nextAudio.text,
+        nextAudio.ttsVoiceId
+      );
+
+      // --- THE FIX: Store the audio and visemes for the canvas to use ---
+      set({ currentAudio: audio, currentVisemes: visemes });
+
       audio.play();
       audio.onended = () => {
-        set({ isPlaying: false });
+        set({ isPlaying: false, currentAudio: null, currentVisemes: [] });
         set((state) => ({ audioQueue: state.audioQueue.slice(1) }));
         get().playNextAudio();
       };
@@ -96,6 +107,8 @@ export const useAvatarStore = create<AvatarState>((set, get) => ({
         isAudioPlaying: false,
         currentEmotion: null,
         isPlaying: false,
+        currentAudio: null,
+        currentVisemes: [],
       });
     }
   },

@@ -70,10 +70,6 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
             parts: [{ type: "text", text: welcomeMessage }],
           },
         ]);
-        useAvatarStore
-          .getState()
-          .addAudioToQueue(welcomeMessage, avatar.ttsVoiceId);
-        useAvatarStore.getState().playNextAudio();
       }, 500);
       return () => clearTimeout(timeoutId);
     }

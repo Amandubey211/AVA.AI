@@ -1,4 +1,3 @@
-// components/AvatarCanvas.tsx
 "use client";
 
 import React, { Suspense, useRef, useEffect, useMemo, useState } from "react";
@@ -18,6 +17,7 @@ import {
   MathUtils,
   AnimationMixer,
   LoopRepeat,
+  MeshStandardMaterial,
 } from "three";
 import { useAvatarStore } from "../store/avatarStore";
 import { ExpressionMapping } from "../lib/avatars";
@@ -42,38 +42,53 @@ function Model({
   const { animations } = useGLTF(idleAnimationUrl);
 
   const modelRef = useRef<Group>(null!);
-  const { isSpeaking, currentEmotion, chatStatus, isAudioPlaying, blink } =
-    useAvatarStore();
+
+  // Get ALL state, including visemes and the current audio player
+  const {
+    isSpeaking,
+    currentEmotion,
+    chatStatus,
+    isAudioPlaying,
+    blink,
+    currentVisemes,
+    currentAudio,
+  } = useAvatarStore();
   const [animation, setAnimation] = useState("Idle");
   const [thinkingText, setThinkingText] = useState(".");
-  const lastTalkAnimation = useRef<string | null>(null);
+
   const mixer = useMemo(() => new AnimationMixer(scene), [scene]);
   const { actions } = useAnimations(animations, modelRef);
 
+  // Re-apply materials to prevent transparency issues, as seen in the reference
   useEffect(() => {
-    if (isAudioPlaying) {
-      // --- THE RANDOMIZATION FIX ---
-      // If we are about to start talking, pick a random talking animation
-      const talkingAnimations = [ANIMATION_MAP.Talking, ANIMATION_MAP.Talking2];
-      // Filter out the last one we played to make it less repetitive
-      const availableAnimations = talkingAnimations.filter(
-        (anim) => anim !== lastTalkAnimation.current
-      );
-      // Pick a random one from the available options
-      const nextAnimation =
-        availableAnimations[
-          Math.floor(Math.random() * availableAnimations.length)
-        ];
+    scene.traverse((child) => {
+      if (
+        (child as SkinnedMesh).isSkinnedMesh &&
+        (child as SkinnedMesh).material
+      ) {
+        (child as SkinnedMesh).material = new MeshStandardMaterial({
+          map: ((child as SkinnedMesh).material as MeshStandardMaterial).map,
+        });
+      }
+    });
+  }, [scene]);
 
-      setAnimation(nextAnimation);
-      lastTalkAnimation.current = nextAnimation;
-    } else if (chatStatus === "submitted") {
+  useEffect(() => {
+    if (chatStatus === "submitted") {
       setAnimation(ANIMATION_MAP.Thinking);
+    } else if (isAudioPlaying) {
+      const availableAnims = [
+        ANIMATION_MAP.Talking,
+        ANIMATION_MAP.Talking2,
+      ].filter((a) => actions[a]);
+      setAnimation(
+        availableAnims[Math.floor(Math.random() * availableAnims.length)] ||
+          "Talking"
+      );
     } else {
       setAnimation(ANIMATION_MAP.Idle);
-      lastTalkAnimation.current = null; // Reset when idle
     }
-  }, [isAudioPlaying, chatStatus]);
+  }, [chatStatus, isAudioPlaying, actions]);
 
   useEffect(() => {
     Object.values(actions).forEach((action) => action?.fadeOut(0.5));
@@ -83,7 +98,6 @@ function Model({
     }
   }, [animation, actions]);
 
-  // "Thinking..." text animation for the indicator
   useEffect(() => {
     if (chatStatus === "submitted") {
       const interval = setInterval(() => {
@@ -93,55 +107,54 @@ function Model({
     }
   }, [chatStatus]);
 
+  // --- THE DEFINITIVE ANIMATION LOOP ---
+  const lerpMorphTarget = (
+    target: string | number,
+    value: number,
+    speed = 0.1
+  ) => {
+    scene.traverse((child) => {
+      const mesh = child as SkinnedMesh;
+      if (mesh.isSkinnedMesh && mesh.morphTargetDictionary != null) {
+        const index =
+          typeof target === "string"
+            ? mesh.morphTargetDictionary![target]
+            : target;
+        if (index !== undefined && mesh.morphTargetInfluences) {
+          mesh.morphTargetInfluences[index] = MathUtils.lerp(
+            mesh.morphTargetInfluences[index],
+            value,
+            speed
+          );
+        }
+      }
+    });
+  };
+
   useFrame((_state, delta) => {
     mixer.update(delta);
-    if (!modelRef.current) return;
+    lerpMorphTarget("mouthSmile", 0.2, 0.5);
+    // Blinking (driven by global store)
+    lerpMorphTarget("eye_close", blink ? 1 : 0, 0.5);
 
-    // A robust function to animate any morph target, inspired by the reference
-    const lerpMorphTarget = (
-      targetName: string,
-      value: number,
-      speed = 0.1
-    ) => {
-      scene.traverse((child) => {
-        if (
-          (child as SkinnedMesh).isSkinnedMesh &&
-          (child as SkinnedMesh).morphTargetDictionary
-        ) {
-          const mesh = child as SkinnedMesh;
-          const index = mesh.morphTargetDictionary?.[targetName];
-          if (index !== undefined && mesh.morphTargetInfluences) {
-            mesh.morphTargetInfluences[index] = MathUtils.lerp(
-              mesh.morphTargetInfluences[index],
-              value,
-              speed
-            );
-          }
-        }
-      });
-    };
-
-    // First, reset all expression morph targets to 0
-    Object.values(expressions).forEach((expr) => {
-      expr.morphTargets.forEach((targetName) =>
-        lerpMorphTarget(targetName, 0, delta * 10)
-      );
-    });
-
-    // Then, apply the current emotion
-    if (currentEmotion && expressions[currentEmotion]) {
-      const { morphTargets, intensity } = expressions[currentEmotion];
-      morphTargets.forEach((targetName) =>
-        lerpMorphTarget(targetName, intensity, delta * 7)
-      );
+    // --- Reset all viseme morph targets (as per reference) ---
+    for (let i = 0; i <= 21; i++) {
+      lerpMorphTarget(i, 0, 0.1);
     }
 
-    // --- THE DEFINITIVE BLINKING FIX ---
-    // Apply blinking using the correct morph target name from the reference.
-    lerpMorphTarget("eye_close", blink ? 1 : 0, delta * 20);
-
-    // Apply lip-sync on top of everything else
-    lerpMorphTarget("jawOpen", isSpeaking ? 1 : 0, delta * 20);
+    // --- High-fidelity lip-sync using viseme data (as per reference) ---
+    if (currentAudio && currentVisemes.length > 0) {
+      const currentTimeMs = currentAudio.currentTime * 1000;
+      let currentVisemeId = 0;
+      for (const [time, visemeId] of currentVisemes) {
+        if (currentTimeMs >= time) {
+          currentVisemeId = visemeId;
+        } else {
+          break;
+        }
+      }
+      lerpMorphTarget(currentVisemeId, 1, 0.2);
+    }
   });
 
   return (
@@ -158,7 +171,7 @@ function Model({
           </div>
         </Html>
       )}
-      <primitive object={scene} scale={2} position={[0, -1.6, 0]} />
+      <primitive object={scene} scale={2} position={[0, -1.7, 0]} />
     </group>
   );
 }
