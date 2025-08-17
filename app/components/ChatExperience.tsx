@@ -3,15 +3,18 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useAvatarStore } from "../store/avatarStore";
 import { AvatarConfig } from "../lib/avatars";
 import AvatarCanvas from "./AvatarCanvas";
 import ChatMessage from "./ChatMessage";
-import ChatInput from "./ChatInput";
+import ChatInput from "./ChatInput"; // For Desktop
 import { motion } from "framer-motion";
 import { ArrowLeft, Coffee, Video } from "lucide-react";
 import { useAvatarChat } from "../hooks/useAvatarChat";
 import TypingIndicator from "./TypingIndicator";
+import VoiceInputButton from "./VoiceInputButton"; // For Mobile
+import LiveTranscript from "./LiveTranscript"; // For Mobile
 import BuyMeACoffeeModal from "./BuyMeACoffeeModal";
 import DebugPanel from "./DebugPanel";
 
@@ -42,7 +45,6 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const finalTranscriptRef = useRef("");
   const isMuteAction = useRef(false);
-
   const [isDevelopment, setIsDevelopment] = useState(false);
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
 
@@ -50,18 +52,13 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
     setIsDevelopment(process.env.NEXT_PUBLIC_DEVELOPMENT_MODE === "true");
   }, []);
 
-  const {
-    messages,
-    status,
-    stop,
-    sendMessage,
-    setMessages,
-  } = // use error as well we have it
+  const { messages, status, error, stop, sendMessage, setMessages } =
     useAvatarChat({
       systemPrompt: avatar.systemPrompt,
       ttsVoiceId: avatar.ttsVoiceId,
     });
 
+  // Welcome Message Logic
   useEffect(() => {
     if (messages.length === 0 && isDevelopment) {
       const welcomeMessage = `Hello! I'm ${avatar.character}. How can I help you today?`;
@@ -83,6 +80,7 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDevelopment]);
 
+  // Speech Recognition Setup (with all bug fixes)
   useEffect(() => {
     const SpeechRecognitionAPI =
       (window as IWindow).SpeechRecognition ||
@@ -176,56 +174,85 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
     }
   };
 
-  const listVariants = {
-    hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.15 } },
-  };
-
   const videoId = "bUw9OxeBJhI";
   const demoVideoUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&controls=0&mute=1&showinfo=0&rel=0`;
 
   return (
-    <main className="relative w-screen h-screen flex flex-col bg-gradient-to-br from-gray-900 to-gray-800 text-white overflow-hidden">
-      {/* --- THE FIX: The Back Button is now a direct child of the `main` container --- */}
-      <div className="absolute top-6 left-6 z-20">
-        <button
-          onClick={() => router.push("/")}
-          className="flex items-center gap-2 px-4 py-2 bg-black/50 text-white font-semibold rounded-full backdrop-blur-sm hover:bg-black/70 transition-colors"
-          aria-label="Back to Gallery"
-        >
-          <ArrowLeft size={20} />
-          <span>Back to Gallery</span>
-        </button>
-      </div>
-
+    <main className="relative w-screen h-screen flex flex-col md:flex-row bg-gradient-to-br from-gray-900 to-gray-800 text-white overflow-hidden">
       {isDevelopment && <DebugPanel avatar={avatar} />}
       <BuyMeACoffeeModal
         isOpen={isSupportModalOpen}
         onClose={() => setIsSupportModalOpen(false)}
       />
 
-      <div className="flex flex-1 overflow-hidden">
-        <div className="w-3/5 h-full relative">
-          <div
-            className="absolute inset-0 z-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${avatar.bgImageUrl})` }}
+      {/* --- Base Layer: Avatar Canvas --- */}
+      <div className="absolute inset-0 md:relative md:w-3/5 h-full">
+        <div
+          className="absolute inset-0 z-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${avatar.bgImageUrl})` }}
+        />
+        <div className="relative z-10 w-full h-full">
+          <AvatarCanvas
+            modelUrl={avatar.modelUrl}
+            expressions={avatar.expressions}
+            idleAnimationUrl={avatar.idleAnimationUrl}
+            camera={{ position: [0, 0, 2.2], fov: 75 }}
           />
-          <div className="relative z-10 w-full h-full">
-            <AvatarCanvas
-              modelUrl={avatar.modelUrl}
-              expressions={avatar.expressions}
-              idleAnimationUrl={avatar.idleAnimationUrl}
-              camera={{ position: [0, 0, 2.2], fov: 75 }}
-            />
-          </div>
         </div>
-        <div className="w-2/5 h-full flex flex-col bg-black/40 backdrop-blur-xl border-l-2 border-white/10">
-          {/* The old back button location is now removed from the header */}
+      </div>
+
+      {/* --- UI Layer --- */}
+      <div className="absolute inset-0 z-20 flex flex-col md:relative md:w-2/5">
+        {/* --- MOBILE UI (hidden on medium screens and up) --- */}
+        <div className="md:hidden flex flex-col h-full w-full">
+          <div className="absolute top-6 left-4 right-4 z-20">
+            <button
+              onClick={() => router.push("/")}
+              className="flex items-center gap-2 px-4 py-2 bg-black/50 text-white font-semibold rounded-full backdrop-blur-sm hover:bg-black/70 transition-colors"
+            >
+              <ArrowLeft size={20} /> Back
+            </button>
+          </div>
+
+          {isDevelopment ? (
+            // Mobile "Online" View
+            <>
+              <LiveTranscript
+                messages={messages}
+                avatarCharacterName={avatar.character}
+              />
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
+                <VoiceInputButton toggleRecording={toggleRecording} />
+              </div>
+            </>
+          ) : (
+            // Mobile "Offline" View
+            <div className="flex flex-col items-center justify-end h-full text-center text-gray-400 p-4 pb-12">
+              <div className="flex flex-col gap-3 w-full max-w-xs">
+                <button
+                  onClick={() => openModal(demoVideoUrl)}
+                  className="flex items-center justify-center gap-2 w-full py-3 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-500 transition-colors"
+                >
+                  <Video size={18} /> Watch Demo Video
+                </button>
+                <button
+                  onClick={() => setIsSupportModalOpen(true)}
+                  className="flex items-center justify-center gap-2 w-full py-3 bg-white/10 text-white font-bold rounded-lg hover:bg-white/20 transition-colors"
+                >
+                  <Coffee size={18} /> Support the Project
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* --- DESKTOP UI (visible on medium screens and up) --- */}
+        <div className="hidden md:flex w-full h-full flex-col bg-black/40 backdrop-blur-xl border-l-2 border-white/10">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="p-6 flex items-center gap-4 border-b border-white/10" // Adjusted padding
+            className="p-6 flex items-center gap-4 border-b border-white/10"
           >
             <div className="flex-grow">
               <h2 className="text-2xl font-bold tracking-tight">{`Chat with ${avatar.character}`}</h2>
@@ -237,7 +264,10 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
           </motion.div>
 
           <motion.div
-            variants={listVariants}
+            variants={{
+              hidden: { opacity: 0 },
+              show: { opacity: 1, transition: { staggerChildren: 0.15 } },
+            }}
             initial="hidden"
             animate="show"
             className="flex-grow overflow-y-auto p-6 custom-scrollbar"
@@ -261,15 +291,13 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
                     onClick={() => openModal(demoVideoUrl)}
                     className="flex items-center justify-center gap-2 w-full py-3 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-500 transition-colors"
                   >
-                    <Video size={18} />
-                    Watch Demo Video
+                    <Video size={18} /> Watch Demo Video
                   </button>
                   <button
                     onClick={() => setIsSupportModalOpen(true)}
                     className="flex items-center justify-center gap-2 w-full py-3 bg-white/10 text-white font-bold rounded-lg hover:bg-white/20 transition-colors"
                   >
-                    <Coffee size={18} />
-                    Support the Project
+                    <Coffee size={18} /> Support the Project
                   </button>
                 </div>
               </motion.div>

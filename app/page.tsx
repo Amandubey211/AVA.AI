@@ -3,8 +3,6 @@ import { Metadata } from "next";
 import { avatars } from "./lib/avatars";
 import ClientLandingPage from "./components/ClientLandingPage";
 
-// --- METADATA FOR SEO & SOCIAL SHARING ---
-// This now works correctly because this is a Server Component.
 export const metadata: Metadata = {
   title: "AI Avatar Platform | Your Personal AI Companion",
   description:
@@ -43,8 +41,6 @@ export const metadata: Metadata = {
 };
 
 export default function LandingPage() {
-  // This is a Server Component. We can prepare data here.
-  // In the future, this is where you would fetch data from a database.
   const allAvatars = avatars;
 
   // We render the Client Component and pass the data down as a prop.
