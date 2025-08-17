@@ -16,7 +16,7 @@ import TypingIndicator from "./TypingIndicator";
 import VoiceInputButton from "./VoiceInputButton"; // For Mobile
 import LiveTranscript from "./LiveTranscript"; // For Mobile
 import BuyMeACoffeeModal from "./BuyMeACoffeeModal";
-import DebugPanel from "./DebugPanel";
+// import DebugPanel from "./DebugPanel";
 
 // Type definitions for robust Speech Recognition
 interface SpeechRecognitionStatic {
@@ -174,19 +174,37 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
   const demoVideoUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&controls=0&mute=1&showinfo=0&rel=0`;
 
   return (
-    <main className="relative w-screen h-screen flex flex-col md:flex-row bg-gradient-to-br from-gray-900 to-gray-800 text-white overflow-hidden">
-      {isDevelopment && <DebugPanel avatar={avatar} />}
+    <main className="relative w-screen h-screen flex flex-col md:flex-row bg-gray-900 text-white overflow-hidden">
+      {/* --- UI ENHANCEMENT: Global Background Image --- */}
+      {/* This div now covers the entire screen, sitting behind all UI elements. */}
+      <div
+        className="absolute inset-0 z-0 bg-cover bg-center filter blur-sm"
+        style={{ backgroundImage: `url(${avatar.bgImageUrl})` }}
+      />
+      {/* A subtle vignette overlay on top of the background */}
+      <div className="absolute inset-0 z-0 bg-black/30"></div>
+
+      {/* {isDevelopment && <DebugPanel avatar={avatar} />} */}
       <BuyMeACoffeeModal
         isOpen={isSupportModalOpen}
         onClose={() => setIsSupportModalOpen(false)}
       />
 
+      {/* --- FLOATING DESKTOP BACK BUTTON --- */}
+      <div className="absolute top-6 left-6 z-30 hidden md:flex">
+        <button
+          onClick={() => router.push("/")}
+          className="flex items-center gap-2 px-4 py-2 bg-black/50 text-white font-semibold rounded-full backdrop-blur-sm hover:bg-black/70 transition-colors"
+          aria-label="Back to Gallery"
+        >
+          <ArrowLeft size={20} />
+          <span>Back to Gallery</span>
+        </button>
+      </div>
+
       {/* --- Base Layer: Avatar Canvas --- */}
+      {/* This is now a transparent canvas floating on top of the background */}
       <div className="absolute inset-0 md:relative md:w-3/5 h-full">
-        <div
-          className="absolute inset-0 z-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${avatar.bgImageUrl})` }}
-        />
         <div className="relative z-10 w-full h-full">
           <AvatarCanvas
             modelUrl={avatar.modelUrl}
@@ -243,7 +261,8 @@ export default function ChatExperience({ avatar }: { avatar: AvatarConfig }) {
         </div>
 
         {/* --- DESKTOP UI (visible on medium screens and up) --- */}
-        <div className="hidden md:flex w-full h-full flex-col bg-black/40 backdrop-blur-xl border-l-2 border-white/10">
+        {/* UI ENHANCEMENT: Increased backdrop-blur and adjusted background color */}
+        <div className="hidden md:flex w-full h-full flex-col bg-black/20 backdrop-blur-2xl border-l-2 border-white/10">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}

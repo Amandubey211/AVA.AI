@@ -171,7 +171,7 @@ function Model({
           </div>
         </Html>
       )}
-      <primitive object={scene} scale={2} position={[0, -1.7, 0]} />
+      <primitive object={scene} scale={1.8} position={[0, -1.7, 0]} />
     </group>
   );
 }
