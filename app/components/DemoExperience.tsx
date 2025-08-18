@@ -128,7 +128,8 @@ export default function DemoExperience({ avatar }: { avatar: AvatarConfig }) {
           <h2 className="text-2xl font-bold md:hidden">{`Chat with ${avatar.character}`}</h2>
           {/* Desktop Title (hidden by default) */}
           <h2 className="text-2xl font-bold hidden md:block">
-            Interactive Demo with
+            Interactive Demo with{" "}
+            <span className="text-purple-500"> {avatar.character}</span>
           </h2>
           <p className="text-gray-400 mt-1 text-sm md:text-xs ">
             {avatar.shortDescription}

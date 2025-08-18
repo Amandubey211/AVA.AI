@@ -149,36 +149,35 @@ const longDummyVisemes2: [number, number][] = [
   [5600, 4],
   [5700, 15],
 ];
-
 export const alexDemoScript: DemoInteraction[] = [
   {
     id: "demo_q1",
     title: "Introduce Yourself",
     userQuestion: "Hello! Can you introduce yourself?",
     aiResponse:
-      "Of course! My name is Alex, and I'm an AI English tutor. I'm here to help you practice conversations in a friendly and supportive space. We can talk about anything you like! ",
+      "Of course! My name is Alex. I am a demonstration of the AVA.AI platform, an interactive 3D AI assistant. I'm here to showcase the features of this project. Feel free to ask me about the technology used! [happy]",
     emotion: "happy",
     audioUrl: "/audio/alex_intro.mp3",
     visemes: longDummyVisemes1,
   },
   {
     id: "demo_q2",
-    title: "Affect vs. Effect",
-    userQuestion: "What's the difference between 'affect' and 'effect'?",
+    title: "About the Platform",
+    userQuestion: "Tell me about the technology behind this platform.",
     aiResponse:
-      "That's a great question! 'Affect' is almost always a verb, meaning 'to influence', while 'effect' is a noun, meaning 'the result'. For example, the music might affect your mood, and the effect could be that you feel much happier! ",
+      "Certainly! This entire platform was built from scratch using Next.js and React Three Fiber for the 3D rendering. The conversational AI is powered by Google Gemini, and the voice you're hearing is generated via the ElevenLabs Text-to-Speech API. The animations, including my blinking and lip-sync, are all handled in real-time. [analytical]",
     emotion: "analytical",
-    audioUrl: "/audio/alex_affect_effect.mp3",
+    audioUrl: "/audio/alex_platform_tech.mp3", // You will need to generate this audio
     visemes: longDummyVisemes2,
   },
   {
     id: "demo_q3",
-    title: "Practice a Scenario",
-    userQuestion: "Can we practice ordering a coffee?",
+    title: "Meet the Creator",
+    userQuestion: "Who created you?",
     aiResponse:
-      "Brilliant idea! I'll be the barista. Let's begin. Ahem... Welcome to The Coffee Spot, what can I get for you today? ",
+      "I was created by Aman Dubey, a passionate full-stack developer. He loves building complex, user-centric applications like me. You can connect with him on LinkedIn, or reach out directly at amandubey.dev@gmail.com to discuss opportunities! ",
     emotion: "encouraging",
-    audioUrl: "/audio/alex_coffee_practice.mp3",
-    visemes: longDummyVisemes1, // Reuse one of the long tracks
+    audioUrl: "/audio/alex_creator_info.mp3", // You will need to generate this audio
+    visemes: longDummyVisemes1,
   },
 ];
