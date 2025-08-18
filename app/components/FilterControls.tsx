@@ -25,13 +25,20 @@ export default function FilterControls({
   setSelectedCategory,
 }: FilterControlsProps) {
   return (
-    <div className="flex justify-center mb-12">
-      <div className="relative flex items-center p-1 bg-gray-800 rounded-full border border-white/10">
+    <motion.div
+      className="flex justify-center mb-12 px-4" // Add horizontal padding for mobile
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.2 }}
+    >
+      {/* --- RESPONSIVE FIX: Use `flex-wrap` and adjust padding/gap --- */}
+      <div className="relative flex flex-wrap justify-center items-center gap-2 p-1.5 bg-gray-800 rounded-full border border-white/10">
         {categories.map((category) => (
           <button
             key={category}
             onClick={() => setSelectedCategory(category)}
-            className={`relative px-4 py-2 text-sm font-semibold rounded-full transition-colors z-10 ${
+            // --- RESPONSIVE FIX: Adjust padding for better touch targets ---
+            className={`relative px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-full transition-colors z-10 ${
               selectedCategory === category
                 ? "text-white"
                 : "text-gray-400 hover:text-white"
@@ -46,10 +53,10 @@ export default function FilterControls({
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               />
             )}
-            {category}
+            <span className="capitalize">{category.toLowerCase()}</span>
           </button>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 }

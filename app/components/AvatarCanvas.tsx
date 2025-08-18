@@ -31,7 +31,7 @@ const ANIMATION_MAP = {
 
 function Model({
   modelUrl,
-  expressions,
+
   idleAnimationUrl,
 }: {
   modelUrl: string;
@@ -45,8 +45,8 @@ function Model({
 
   // Get ALL state, including visemes and the current audio player
   const {
-    isSpeaking,
-    currentEmotion,
+    // isSpeaking,
+    // currentEmotion,
     chatStatus,
     isAudioPlaying,
     blink,
