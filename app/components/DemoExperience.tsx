@@ -84,6 +84,10 @@ export default function DemoExperience({ avatar }: { avatar: AvatarConfig }) {
 
   return (
     <main className="relative w-screen h-screen flex flex-col md:flex-row bg-gradient-to-br from-gray-900 to-gray-800 text-white overflow-hidden">
+      <div
+        className="absolute inset-0 z-0 bg-cover bg-center filter blur-sm"
+        style={{ backgroundImage: `url(${avatar.bgImageUrl})` }}
+      />
       <BuyMeACoffeeModal
         isOpen={isSupportModalOpen}
         onClose={() => setIsSupportModalOpen(false)}
@@ -104,10 +108,10 @@ export default function DemoExperience({ avatar }: { avatar: AvatarConfig }) {
 
       {/* --- Base Layer: Avatar Canvas (No change needed) --- */}
       <div className="absolute inset-0 md:relative md:w-3/5 h-full">
-        <div
+        {/* <div
           className="absolute inset-0 z-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${avatar.bgImageUrl})` }}
-        />
+        /> */}
         <div className="relative z-10 w-full h-full">
           <DemoAvatarCanvas
             thinking={isThinking}
@@ -131,12 +135,12 @@ export default function DemoExperience({ avatar }: { avatar: AvatarConfig }) {
             Interactive Demo with{" "}
             <span className="text-purple-500"> {avatar.character}</span>
           </h2>
-          <p className="text-gray-400 mt-1 text-sm md:text-xs hidden md:block ">
+          {/* <p className="text-purple-500 mt-1 text-sm md:text-xs hidden md:block ">
             {avatar.shortDescription}
-          </p>
+          </p> */}
         </div>
 
-        <motion.div className="flex-grow overflow-y-auto hidden md:block  custom-scrollbar text-xs">
+        <motion.div className="flex-grow overflow-y-auto p-2 hidden md:block  custom-scrollbar text-xs">
           {messages.slice(-1).map((msg) => (
             <ChatMessage
               key={msg.id}
