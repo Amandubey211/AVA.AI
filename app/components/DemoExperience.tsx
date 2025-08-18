@@ -131,12 +131,12 @@ export default function DemoExperience({ avatar }: { avatar: AvatarConfig }) {
             Interactive Demo with{" "}
             <span className="text-purple-500"> {avatar.character}</span>
           </h2>
-          <p className="text-gray-400 mt-1 text-sm md:text-xs ">
+          <p className="text-gray-400 mt-1 text-sm md:text-xs hidden md:block ">
             {avatar.shortDescription}
           </p>
         </div>
 
-        <motion.div className="flex-grow overflow-y-auto  custom-scrollbar text-xs">
+        <motion.div className="flex-grow overflow-y-auto hidden md:block  custom-scrollbar text-xs">
           {messages.slice(-1).map((msg) => (
             <ChatMessage
               key={msg.id}
@@ -147,7 +147,7 @@ export default function DemoExperience({ avatar }: { avatar: AvatarConfig }) {
           {isThinking && <TypingIndicator />}
           <div ref={messagesEndRef} />
         </motion.div>
-
+        <div className="flex-grow"></div>
         {/* --- Demo Controls (Now a permanent footer for the panel) --- */}
         <div className="border-t border-white/10">
           <DemoControls

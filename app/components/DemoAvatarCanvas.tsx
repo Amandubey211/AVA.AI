@@ -194,7 +194,7 @@ function Model({
     <>
       {thinking && (
         <Html position-y={1.8}>
-          <div className="flex justify-center items-center -translate-x-1/2 mt-24">
+          <div className="flex justify-center items-center -translate-x-1/2 mt-44 md:mt-32">
             <span className="relative flex h-8 w-8 items-center justify-center">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
               <span className="relative inline-flex items-center justify-center duration-75 rounded-full h-8 w-8 bg-white/80 text-gray-800 font-mono">
