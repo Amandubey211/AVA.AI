@@ -1,136 +1,170 @@
 <div align="center">
-  <img src="[YOUR_HERO_GIF_URL]" alt="AI Avatar Platform Hero Animation" width="800"/>
-  <h1>AI Avatar Platform</h1>
+  <img src="https://ava-ai-five.vercel.app/og/landing.png" alt="AVA.AI Hero Section" width="850"/>
+  <h1>AVA.AI - AI Avatar Platform</h1>
   <p>
-    <b>A cutting-edge platform for creating and interacting with intelligent, 3D AI assistants, brought to life in the browser with Next.js and Google Gemini.</b>
+    <b>
+      A cutting-edge platform for creating and interacting with intelligent, real-time 3D AI assistants,<br />
+      brought to life in the browser with Next.js, React Three Fiber, and Google Gemini.
+    </b>
   </p>
   <br />
-    <a href="[YOUR_LIVE_DEPLOYMENT_URL]"><strong>View Live Demo »</strong></a>
-    <br />
-    <br />
-    <a href="#-about-the-project">About</a>
-    ·
-    <a href="#-key-features">Features</a>
-    ·
-    <a href="#-tech-stack">Tech Stack</a>
-    ·
-    <a href="#-getting-started">Getting Started</a>
-    ·
-    <a href="#-future-scope">Roadmap</a>
+  <a href="https://ava-ai-five.vercel.app/"><strong>View Live Demo »</strong></a>
+  <br /><br />
+  <a href="#-about-the-project">About</a>
+  ·
+  <a href="#-key-features">Features</a>
+  ·
+  <a href="#-architecture-and-data-flow">Architecture</a>
+  ·
+  <a href="#-tech-stack">Tech Stack</a>
+  ·
+  <a href="#-getting-started">Getting Started</a>
+  ·
+  <a href="#-future-scope">Roadmap</a>
 </div>
 
 ---
 
 ## 🚀 About The Project
 
-This project is an ambitious endeavor to build a scalable and immersive platform for interacting with specialized 3D AI assistants. Inspired by industry leaders like Soul Machines, the goal is to move beyond simple text-based chatbots and create emotionally resonant, interactive digital humans for a variety of use cases.
+AVA.AI is an ambitious, scalable, and immersive platform for interacting with specialized 3D AI assistants. Inspired by industry leaders like Soul Machines, our mission transcends text-based chatbots and aims to create emotionally resonant, interactive digital humans.
 
-The user experience is paramount, featuring a stunning, performant 3D hero section, a dynamic gallery of configurable avatars, and a real-time, streaming chat interface that brings the characters to life.
+This project is a comprehensive full-stack showcase, merging modern 3D rendering, advanced state management, real-time AI/TTS integration, and sophisticated, responsive UI/UX. With a cost-free "Demo Mode" (pre-scripted interactions and pre-recorded voice) to showcase its capabilities, AVA.AI redefines interactive digital assistants for a wide range of use cases and platforms.
 
 ### Showcase
 
 <table width="100%">
   <tr>
     <td width="50%" align="center">
-      <b>Dynamic Avatar Gallery</b>
-      <br />
-      <br />
+      <b>Dynamic & Responsive Galleries</b>
+      <br /><br />
       <img src="[YOUR_GALLERY_GIF_URL]" alt="Avatar Gallery Showcase" />
     </td>
     <td width="50%" align="center">
-      <b>Live Streaming Chat</b>
-      <br />
-      <br />
-      <img src="[YOUR_CHAT_GIF_URL]" alt="Live Chat Showcase" />
+      <b>Dual-Mode Chat Experience</b>
+      <br /><br />
+      <img src="https://ava-ai-five.vercel.app/chat/alex-english-tutor" alt="Live Chat Showcase" />
     </td>
   </tr>
 </table>
 
 ## ✨ Key Features
 
-*   **Real-time Conversational AI:** Live, streaming chat powered by the **Google Gemini API** and the Vercel AI SDK.
-*   **Interactive 3D Hero:** A performant, full-screen hero section built with React Three Fiber, featuring a multi-character composition, scroll-based parallax animations, dramatic neon lighting, and post-processing effects.
-*   **Dynamic Avatar Gallery:** A fully configurable system for displaying specialized assistants in a "Featured" carousel and a "Popular" grid, with unique themes, fonts, and colors defined per character.
-*   **Live 3D Preview:** An on-demand, accessible modal that allows users to inspect the full 3D model of an assistant with orbit controls.
-*   **Real-time Lip-Sync:** The 3D avatar's mouth animates in real-time as the AI assistant "speaks," creating a more immersive and believable interaction.
-*   **Scalable Architecture:** Built on the **Next.js 14 App Router**, with a clean separation between performant Server Components and interactive Client Components.
-*   **Polished UX:** Fluid, 60fps animations throughout, including smooth page scrolling via Lenis, parallax effects, and interactive UI elements powered by Framer Motion.
+- **Real-time Conversational AI:** Live, streaming chat powered by Google Gemini API, orchestrated by a custom `useAvatarChat` hook on top of the Vercel AI SDK.
+- **Advanced 3D Animation System:**
+  - Full Body Animations with robust state machine: seamless transitions between Idle, Thinking, and randomized Talking.
+  - Procedural, natural blinking makes avatars feel alive.
+  - AI-Driven Expressions: Emotional signals parsed from the AI's response drive morph-target facial animation.
+- **Full-Duplex Voice Interaction:**
+  - Text-to-Speech: High-quality, sequential voice output by ElevenLabs API.
+  - Audio-Driven Lip-Sync: Real-time lip movement synchronized to streamed TTS audio.
+  - Speech-to-Text: Voice input via Web Speech API, intelligently managing state, mute/unmute, and maintaining transcript context.
+- **Interactive 3D Hero:** A multi-character, full-screen 3D hero section in React Three Fiber, featuring parallax, neon lighting, and post-processing.
+- **Dynamic Avatar Galleries:** Configurable carousels ("Featured"), grid layouts ("Popular"), and modal 3D previews.
+- **Sophisticated & Responsive Architecture:**
+  - Dual-mode chat: Professional 2-column chat on desktop, fullscreen voice-first experience on mobile.
+  - Fast Next.js App Router with performant Server Components and rich, interactive Client Components.
+- **Cost-Free "Demo Mode":** Showcases full animation and speech capabilities without live API usage, using pre-recorded content.
+- **Polished UX:** 60fps animations, smooth page transitions (Lenis), interactive UI elements (Framer Motion).
+
+## 🏗️ Architecture and Data Flow
+
+The platform leverages a decoupled, modern architecture separating data-fetching/SEO (Server Components) from rich client-side interaction (Client Components). State is centrally managed with Zustand, ensuring reliable coordination between AI responses, audio playback, 3D animation, and UI.
+
+### System Diagram
+graph TD
+subgraph Browser (Client-Side)
+A[UI Components: ChatExperience / DemoExperience] -->|1. User Action| B{useAvatarChat Hook / Local State};
+B -->|2. Send Message| C[Backend: /api/chat];
+B -->|3. Set "Thinking" State| D[Global State: Zustand];
+D -->|4. Update Animation| E[3D Canvas: AvatarCanvas];
+C --streams text--> B;
+B -->|5. AI Response Finished| D;
+D -->|6. Queue Audio| F[Backend: /api/tts];
+F --streams audio--> D;
+D -->|7. Play Audio & Animate| E;
+end
+subgraph Server (Vercel Edge)
+C --sends prompt--> G[Google Gemini API];
+F --sends text--> H[ElevenLabs API];
+end
+
 
 ## 🛠️ Tech Stack
 
-This project uses a modern, high-performance stack designed to deliver a rich and seamless user experience.
-
-| Category             | Technology / Library                                                                                                |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| **Framework**        | [Next.js](https://nextjs.org/) 14 (App Router)                                                                      |
-| **Language**         | [TypeScript](https://www.typescriptlang.org/)                                                                       |
-| **Styling**          | [Tailwind CSS](https://tailwindcss.com/)                                                                            |
-| **AI**               | [Google Gemini](https://ai.google.dev/) via [Vercel AI SDK](https://sdk.vercel.ai/)                                 |
-| **3D Rendering**     | [Three.js](https://threejs.org/), [React Three Fiber](https://docs.pmnd.rs/react-three-fiber), [React Three Drei](https://github.com/pmndrs/drei) |
-| **3D Effects**       | [@react-three/postprocessing](https://github.com/pmndrs/postprocessing)                                             |
-| **Animation**        | [Framer Motion](https://www.framer.com/motion/), [Lenis](https://lenis.darkroom.engineering/)                         |
-| **State Management** | [Zustand](https://zustand-demo.pmnd.rs/) (for shared animation state)                                                 |
-| **Deployment**       | [Vercel](https://vercel.com/)                                                                                       |
+| Category             | Technology / Library                                   |
+|----------------------|--------------------------------------------------------|
+| Framework            | [Next.js](https://nextjs.org/) 14 (App Router)         |
+| Language             | [TypeScript](https://www.typescriptlang.org/)          |
+| Styling              | [Tailwind CSS](https://tailwindcss.com/)               |
+| AI                   | [Google Gemini](https://ai.google.dev/) <br/>via [Vercel AI SDK](https://sdk.vercel.ai/)  |
+| Text-to-Speech       | [ElevenLabs](https://elevenlabs.io/)                   |
+| 3D Rendering         | [Three.js](https://threejs.org/), [React Three Fiber](https://docs.pmnd.rs/react-three-fiber), [React Drei](https://github.com/pmndrs/drei) |
+| 3D Effects           | [@react-three/postprocessing](https://github.com/pmndrs/postprocessing)    |
+| Animation            | [Framer Motion](https://www.framer.com/motion/), [Lenis](https://lenis.darkroom.engineering/) |
+| State Management     | [Zustand](https://zustand-demo.pmnd.rs/)               |
+| Voice Input          | Web Speech API                                         |
+| Deployment           | [Vercel](https://vercel.com/)                          |
 
 ## 🏁 Getting Started
 
-To get a local copy up and running, follow these simple steps.
+To get a local copy up and running:
 
 ### Prerequisites
 
-*   Node.js (v18 or later recommended)
-*   npm, yarn, or pnpm
+- **Node.js** (v18+ recommended)
+- **npm**, **yarn**, _or_ **pnpm**
 
 ### Installation
 
-1.  **Clone the repository:**
-    ```sh
+1. **Clone the repository:**
+    ```
     git clone https://github.com/[YOUR_GITHUB_USERNAME]/ai-avatar-platform.git
     ```
-2.  **Navigate to the project directory:**
-    ```sh
+2. **Navigate to the project directory:**
+    ```
     cd ai-avatar-platform
     ```
-3.  **Install dependencies:**
-    ```sh
+3. **Install dependencies:**
+    ```
     npm install
     ```
-4.  **Set up your environment variables:**
-    *   Create a file named `.env.local` in the root of the project.
-    *   Get a free API key from [Google AI Studio](https://aistudio.google.com/).
-    *   Add your key to the file:
-    ```env
-    GOOGLE_GENERATIVE_AI_API_KEY=YOUR_SECRET_GEMINI_KEY
+4. **Set up environment variables:**
+    - Create a `.env.local` file at the root.
+    - Obtain a free API key from [Google AI Studio](https://aistudio.google.com/) and, optionally, from ElevenLabs for voice.
+    - Add keys:
     ```
-5.  **Run the development server:**
-    ```sh
+    GOOGLE_GENERATIVE_AI_API_KEY=YOUR_SECRET_GEMINI_KEY
+    ELEVENLABS_API_KEY=YOUR_ELEVENLABS_KEY   # Optional, for voice
+    ```
+5. **Run the development server:**
+    ```
     npm run dev
     ```
-6.  Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
+6. **Open your browser:**  
+   Visit [http://localhost:3000](http://localhost:3000).
 
 ## 🔮 Future Scope (Roadmap)
 
-This project has a rich roadmap for future development, transforming it from a powerful demo into a full-featured platform.
-
-*   **Enhanced Speech & Animation:**
-    *   [ ] Integrate a Text-to-Speech (TTS) service (e.g., ElevenLabs) to give the avatars a real voice.
-    *   [ ] Refine lip-syncing to be driven by audio phonemes for higher accuracy.
-    *   [ ] Trigger a wider range of facial expressions and idle body animations based on the AI's emotional sentiment.
-*   **User & Database Integration:**
-    *   [ ] Implement user authentication with NextAuth.js to allow for personalized experiences.
-    *   [ ] Connect a database (e.g., Vercel Postgres) to save user conversation histories.
-*   **Platform Features:**
-    *   [ ] Build a search and filter system for the avatar gallery based on tags and categories.
-    *   [ ] Develop a "Studio" page where users could potentially customize an avatar's appearance or personality (system prompt).
-*   **Voice Input:**
-    *   [ ] Integrate a Speech-to-Text (STT) service (e.g., the browser's Web Speech API or OpenAI's Whisper) to allow users to speak directly to the assistants.
+- **Enhanced Speech & Animation:**
+  - [ ] Integrate advanced TTS service (e.g., ElevenLabs) for real-time voice in production.
+  - [ ] Refine lip-sync by driving animations with precise audio phonemes.
+  - [ ] Expand facial and body emotional expression (AI-driven animations).
+- **User & Database Integration:**
+  - [ ] Add NextAuth.js for authentication.
+  - [ ] Connect Vercel Postgres (or similar) to store conversation history.
+- **Platform Features:**
+  - [ ] Build advanced search and filtering for the avatar gallery.
+  - [ ] Develop a "Studio" for avatar personalization (appearance, system prompt, etc.).
+- **Voice Input:**
+  - [ ] Full Speech-to-Text integration with browser and/or OpenAI Whisper for hands-free chat.
 
 ## 👤 Author
 
-**[YOUR_NAME]**
-
-*   **Portfolio:** `[YOUR_PORTFOLIO_URL]`
-*   **LinkedIn:** `[YOUR_LINKEDIN_URL]`
-*   **GitHub:** `[YOUR_GITHUB_PROFILE_URL]`
+[YOUR_NAME]  
+- Portfolio: https://amandubey.vercel.app/
+- LinkedIn: https://www.linkedin.com/in/profile-amandubey/ 
+- GitHub: https://github.com/Amandubey211
 
 ---
+
