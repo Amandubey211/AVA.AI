@@ -80,58 +80,40 @@ function Model({
   const mixer = useMemo(() => new AnimationMixer(scene), [scene]);
   const { actions } = useAnimations(animations, modelRef);
 
-  //   // Animation State Machine for the demo
-  //   useEffect(() => {
-  //     if (thinking) {
-  //       setAnimation(ANIMATION_MAP.Thinking);
-  //     } else if (isSpeaking) {
-  //       // --- THE RANDOMIZATION FIX ---
-  //       const talkingAnimations = [
-  //         ANIMATION_MAP.Talking,
-  //         ANIMATION_MAP.Talking2,
-  //       ].filter((anim) => actions[anim]);
-
-  //       const availableAnimations = talkingAnimations.filter(
-  //         (anim) => anim !== lastTalkAnimation.current
-  //       );
-
-  //       const nextAnimation =
-  //         availableAnimations[
-  //           Math.floor(Math.random() * availableAnimations.length)
-  //         ] || talkingAnimations[0]; // <-- fallback to a string, not an array
-
-  //       setAnimation(nextAnimation);
-  //       lastTalkAnimation.current = nextAnimation;
-  //     } else {
-  //       setAnimation(ANIMATION_MAP.Idle);
-  //       lastTalkAnimation.current = null;
-  //     }
-  //   }, [isSpeaking, thinking, actions]);
-
   useEffect(() => {
     if (thinking) {
       setAnimation(ANIMATION_MAP.Thinking);
     } else if (isSpeaking) {
+      // --- THE TYPE-SAFE FIX ---
+      // We explicitly define the type of the array from the start.
       const talkingAnimations: (keyof typeof ANIMATION_MAP)[] = [
         "Talking",
         "Talking2",
-      ].filter((anim) => actions[anim]) as any;
-      const availableAnimations = talkingAnimations.filter(
+      ];
+
+      const validTalkingAnims = talkingAnimations.filter(
+        (anim) => actions[anim]
+      );
+      const availableAnimations = validTalkingAnims.filter(
         (anim) => anim !== lastTalkAnimation.current
       );
       const nextAnimation =
-        availableAnimations[
-          Math.floor(Math.random() * availableAnimations.length)
-        ] || talkingAnimations[0];
+        availableAnimations.length > 0
+          ? availableAnimations[
+              Math.floor(Math.random() * availableAnimations.length)
+            ]
+          : validTalkingAnims[0]; // Fallback to the first valid one
 
-      setAnimation(nextAnimation);
-      // --- THE FIX: We are certain `nextAnimation` is of the correct type now ---
-      lastTalkAnimation.current = nextAnimation;
+      if (nextAnimation) {
+        setAnimation(nextAnimation);
+        lastTalkAnimation.current = nextAnimation;
+      }
     } else {
       setAnimation(ANIMATION_MAP.Idle);
       lastTalkAnimation.current = null;
     }
   }, [isSpeaking, thinking, actions]);
+
   // Effect to play the chosen animation
   useEffect(() => {
     Object.values(actions).forEach((action) => action?.fadeOut(0.5));
