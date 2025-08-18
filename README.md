@@ -38,12 +38,12 @@ This project is a comprehensive full-stack showcase, merging modern 3D rendering
     <td width="50%" align="center">
       <b>Dynamic & Responsive Galleries</b>
       <br /><br />
-      <img src="[YOUR_GALLERY_GIF_URL]" alt="Avatar Gallery Showcase" />
+      <img src="https://i.ibb.co/qLsbVRcf/Screenshot-2025-08-18-164654.png" alt="Avatar Gallery Showcase" />
     </td>
     <td width="50%" align="center">
       <b>Dual-Mode Chat Experience</b>
       <br /><br />
-      <img src="https://ava-ai-five.vercel.app/chat/alex-english-tutor" alt="Live Chat Showcase" />
+      <img src="https://media.licdn.com/dms/image/v2/D4D22AQEh-2mbJ7lmbQ/feedshare-shrink_800/B4DZi73kfAG8Ak-/0/1755498566855?e=1758153600&v=beta&t=lIuePJ8V21uBuqBkhUR3jtj8GFz2kdYia_FimDaY_1U" alt="Live Chat Showcase" />
     </td>
   </tr>
 </table>
