@@ -116,7 +116,7 @@ export default function Hero() {
         priority
       />
 
-      <div className="absolute inset-0 bg-black/50 z-30 pointer-events-none modal-backdrop-blur"></div>
+      <div className="absolute inset-0  z-30 pointer-events-none modal-backdrop-blur"></div>
 
       <div className="relative z-50 flex flex-col items-center text-center p-4 pb-16">
         <motion.p
